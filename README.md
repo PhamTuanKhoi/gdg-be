@@ -78,3 +78,4 @@ Nest is [MIT licensed](LICENSE).
 "@nestjs/typeorm": "^11.0.0"
 "mysql2": "^3.12.0"
 "typeorm": "^0.3.20"
+"@nestjs/config": "^4.0.0",
