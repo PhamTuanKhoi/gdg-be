@@ -75,3 +75,6 @@ Nest is [MIT licensed](LICENSE).
 
 <!-- README.md -->
 "@nestjs/mapped-types": "*"
+"@nestjs/typeorm": "^11.0.0"
+"mysql2": "^3.12.0"
+"typeorm": "^0.3.20"
