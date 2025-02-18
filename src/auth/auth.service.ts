@@ -1,26 +1,64 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common'; 
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from 'src/users/users.service';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    private readonly usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+
+  async validateUser(email: string, pass: string): Promise<any> {
+    const user = await this.usersService.findByUsername(email);
+
+    return user
+
+    // if (!user)
+    //   throw new HttpException(`Email không tồn tại !`, HttpStatus.NOT_FOUND);
+
+    // const match_email = await bcrypt.compare(
+    //   pass,
+    //   user?.password.replace('$2y$', '$2a$'),
+    // );
+
+    // if (!match_email)
+    //   throw new HttpException(`Mật khẩu không đúng!`, HttpStatus.BAD_GATEWAY);
+
+    // if (user && match_email) {
+    //   const { password, ...result } = user;
+    //   return result;
+    // }
+
+    // return null;
+  } 
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.usersService.findByUsername(loginUserDto.username); 
+
+    // if (!user || user.role != 2) {
+    //   throw new UnauthorizedException();
+    // }
+
+    const payload = {
+      email: user.name, 
+
+      //chỉ giáo viên
+      role: 'teacher',
+    };
+
+    const dataUser = { username: user.name };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: dataUser,
+    };
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+  
 }
