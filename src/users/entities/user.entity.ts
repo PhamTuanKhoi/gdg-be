@@ -7,6 +7,9 @@ export class User extends AbstractEntity<User> {
     name: string;
 
     @Column()
+    username: string;
+
+    @Column()
     avartar: string;
 
     @Column()
