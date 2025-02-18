@@ -79,3 +79,7 @@ Nest is [MIT licensed](LICENSE).
 "mysql2": "^3.12.0"
 "typeorm": "^0.3.20"
 "@nestjs/config": "^4.0.0",
+
+<!-- migrate -->
+npm run migration:generate --name=create_users_table
+npm run migration:run
