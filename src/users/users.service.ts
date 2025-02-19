@@ -5,6 +5,7 @@ import { UserRepository } from './user.repository';
 import * as bcrypt from "bcrypt";
 import { UserRoleEnum } from './enums/user.role.enum';
 import { User } from './entities/user.entity';
+import { UserQueryDto } from './dto/query-user.dto';
 
 
 @Injectable()
@@ -34,9 +35,9 @@ export class UsersService implements OnApplicationBootstrap {
 
     return newUser;
   }  
-
-  findAll() {
-    return `This action returns all users`;
+  
+  async findAllUsers(queryDto: UserQueryDto) { 
+    return this.userRepository.findAll(queryDto);
   }
 
   async findByUsername(username: string) {

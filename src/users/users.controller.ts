@@ -1,20 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, ParseIntPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { Roles } from 'src/auth/decorator/roles.decorator';
-import { UserRoleEnum } from './enums/user.role.enum';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { User } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto'; 
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger'; 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Express } from 'express'
+import { UserQueryDto } from './dto/query-user.dto';
 
 @ApiBearerAuth()
 @ApiTags('User') 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Lấy danh sách user có phân trang, tìm kiếm và sắp xếp' })
+  @ApiResponse({ status: 200, description: 'Danh sách user được trả về.' })
+  async getAllUsers(@Query() queryDto: UserQueryDto) {
+    return this.usersService.findAllUsers(queryDto);
+  }
 
   @Post('create')
   @ApiOperation({ summary: 'Tạo user mới với avatar' })
