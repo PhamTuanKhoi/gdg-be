@@ -43,7 +43,7 @@ export class UsersService implements OnApplicationBootstrap {
         avartar: "",
         email: "admin@example.com",
         password: passwordHash,
-        role: UserRoleEnum.ADMIN
+        role: UserRoleEnum.SUPERADMIN
       });
       console.log("✅ Superuser created!");
     } else {

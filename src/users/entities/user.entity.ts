@@ -1,24 +1,26 @@
-import { AbstractEntity } from "../../../src/database/abstract.entity";
-import { Column, Entity } from "typeorm";
-import { UserRoleEnum } from "../enums/user.role.enum";
+import { AbstractEntity } from 'src/database/abstract.entity';
+import { Entity, Column } from 'typeorm'; 
 
 @Entity('user')
 export class User extends AbstractEntity<User> {
-    @Column()
+    @Column({ type: 'varchar', length: 255, nullable: false })
     name: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
     username: string;
 
-    @Column()
-    avartar: string;
+    @Column({ type: 'varchar', length: 500, nullable: true })
+    avatar: string; // Có thể null
 
-    @Column()
+    @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
     email: string;
-  
-    @Column()
+
+    @Column({ type: 'varchar', length: 255, nullable: false })
     password: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 50, default: 'user' })
     role: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    position: string; // Có thể null
 }

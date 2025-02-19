@@ -23,7 +23,7 @@ export class UserRepository {
   }
 
   async save(userDto: any) {
-    return await this.userRepository.save(userDto);
+    return await this.userRepository.save({...userDto});
   }
 
 }
