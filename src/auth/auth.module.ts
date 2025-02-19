@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants/constants';
 import { JwtStrategy } from './strategy/jwt.strategy'; 
 import { UsersModule } from 'src/users/users.module';
+import { RolesGuard } from './guard/roles.guard';
 // import { RolesGuard } from './guard/roles.guard';
 
 
@@ -19,7 +20,7 @@ import { UsersModule } from 'src/users/users.module';
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy], //RolesGuard
+  providers: [AuthService, LocalStrategy, JwtStrategy, RolesGuard],
   controllers: [AuthController],
   exports: [AuthService],
 })

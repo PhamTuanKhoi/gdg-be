@@ -42,13 +42,32 @@ export class AuthService {
   async login(loginUserDto: LoginUserDto) {
     const user = await this.usersService.findByUsername(loginUserDto.username); 
     const payload = {
+      id: user.id,
       email: user.name, 
-    };
- 
+    }; 
+     
     return {
       access_token: this.jwtService.sign(payload),
       user: { username: user.name },
     };
+  }
+
+  async verifyJwt(token) {
+    try {
+      if (!token) {
+        throw new UnauthorizedException();
+      } 
+
+      const { id, exp } = await this.jwtService.verifyAsync(token);
+
+      const data = await this.usersService.findById(id);  
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+      return { user: { id, name: data.name, username: data.username, role: data.role }, exp };
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
   }
 
   

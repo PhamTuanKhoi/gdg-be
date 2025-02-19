@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './user.repository';
 import * as bcrypt from "bcrypt";
+import { UserRoleEnum } from './enums/user.role.enum';
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
@@ -18,6 +19,10 @@ export class UsersService implements OnApplicationBootstrap {
 
   async findByUsername(username: string) {
     return await this.userRepository.findByUsername(username)
+  }
+
+  async findById(id: number) {
+    return await this.userRepository.findById(id)
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
@@ -38,6 +43,7 @@ export class UsersService implements OnApplicationBootstrap {
         avartar: "",
         email: "admin@example.com",
         password: passwordHash,
+        role: UserRoleEnum.ADMIN
       });
       console.log("✅ Superuser created!");
     } else {

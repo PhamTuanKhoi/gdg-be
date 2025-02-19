@@ -16,6 +16,12 @@ export class UserRepository {
     })
   }
 
+  async findById(id: number) {
+    return await this.userRepository.findOneBy({
+        id
+    })
+  }
+
   async save(userDto: any) {
     return await this.userRepository.save(userDto);
   }
