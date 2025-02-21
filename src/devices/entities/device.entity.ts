@@ -1,5 +1,6 @@
+import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
 import { AbstractEntity } from '../../../src/database/abstract.entity';
-import { Column, Entity } from 'typeorm'; 
+import { Column, Entity, OneToMany } from 'typeorm'; 
 
 @Entity()
 export class Device extends AbstractEntity<Device> {
@@ -27,7 +28,7 @@ export class Device extends AbstractEntity<Device> {
     @Column({ type: 'date', nullable: true })
     calibrationEndDate: Date;    
 
-    // ----------------- order
+    // ----------------- order ----------------------
     @Column({ type: 'varchar', length: 100, nullable: true })
     type: string;
 
@@ -39,4 +40,10 @@ export class Device extends AbstractEntity<Device> {
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     status: string; 
+
+    // ----------------- relation --------------------
+    @OneToMany(() => DeviceMedia, (deviceMedia) => deviceMedia.device, {
+        cascade: true,  
+    })
+    medias: DeviceMedia[];
 }
