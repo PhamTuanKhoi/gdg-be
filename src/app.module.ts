@@ -6,13 +6,14 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/guard/roles.guard';
 import { DevicesModule } from './devices/devices.module';
+import { DeviceMediasModule } from './device-medias/device-medias.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), 
     DatabaseModule, 
     UsersModule, 
     AuthModule, 
-    DevicesModule
+    DevicesModule, DeviceMediasModule
   ],
   controllers: [],
   providers: [
