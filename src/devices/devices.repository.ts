@@ -19,7 +19,7 @@ export class DevicesRepository {
   }
 
   async findById(id: number): Promise<Device | null> {
-    return this.findOneByField('id', id);
+    return await this.findOneByField('id', id);
   }
 
   async save(device: Partial<Device>): Promise<Device> {
@@ -27,11 +27,20 @@ export class DevicesRepository {
   }
 
   async create(createDeviceDto: CreateDeviceDto): Promise<Device> {
-    return this.deviceRepository.create(createDeviceDto);
+    return await this.deviceRepository.create(createDeviceDto);
   }
 
   async saveMedia(media: Partial<DeviceMedia>): Promise<DeviceMedia> {
     return await this.mediaRepository.save(media);
   }
+
+  async findMediaById(id: number): Promise<DeviceMedia | null> {
+    return await this.mediaRepository.findOne({ where: { id } });  
+  }
+
+  async rmoveMedia(media: DeviceMedia): Promise<DeviceMedia | null> {
+    return await this.mediaRepository.remove(media);
+  }
+
 }
 
