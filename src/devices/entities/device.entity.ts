@@ -8,7 +8,10 @@ export class Device extends AbstractEntity<Device> {
     code: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
-    name: string;
+    name_vi: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    name_en: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     manufacturer: string;

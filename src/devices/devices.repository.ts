@@ -2,13 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm'; 
 import { Device } from './entities/device.entity';
+import { CreateDeviceDto } from './dto/create-device.dto';
+import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
 
 @Injectable()
-export class DeviceRepository {
+export class DevicesRepository {
   constructor(
     @InjectRepository(Device)
     private readonly deviceRepository: Repository<Device>,
-  ) {} 
+    @InjectRepository(DeviceMedia)
+    private readonly mediaRepository: Repository<DeviceMedia>,
+  ) {}
 
   async findOneByField(field: keyof Device, value: any): Promise<Device | null> {
     return await this.deviceRepository.findOne({ where: { [field]: value } });
@@ -19,11 +23,15 @@ export class DeviceRepository {
   }
 
   async save(device: Partial<Device>): Promise<Device> {
-    return await this.deviceRepository.save(device) as Device;  
+    return await this.deviceRepository.save(device) as Device;
   }
 
-  async createDevice(deviceDto: Partial<Device>): Promise<Device> {
-    const device = this.deviceRepository.create(deviceDto);
-    return await this.deviceRepository.save(device);
+  async create(createDeviceDto: CreateDeviceDto): Promise<Device> {
+    return this.deviceRepository.create(createDeviceDto);
+  }
+
+  async saveMedia(media: Partial<DeviceMedia>): Promise<DeviceMedia> {
+    return await this.mediaRepository.save(media);
   }
 }
+

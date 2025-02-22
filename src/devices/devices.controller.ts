@@ -1,14 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, HttpStatus, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, HttpStatus, HttpException, UploadedFiles } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ImportResultDto } from './dto/import-device.dto';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('devices')
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
+
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new device with multiple file upload' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Device data with files',
+    type: CreateDeviceDto,
+  })
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: './uploads/', // Đường dẫn lưu file
+        filename: (req, file, callback) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async createDevice(
+    @Body() createDeviceDto: CreateDeviceDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.devicesService.createDevice(createDeviceDto, files);
+  }
 
   @Post('import')
   @ApiOperation({ summary: 'Import device từ file Excel' })
@@ -35,10 +63,6 @@ export class DevicesController {
     return this.devicesService.importDevices(file.buffer);
   } 
 
-  @Post()
-  create(@Body() createDeviceDto: CreateDeviceDto) {
-    return this.devicesService.create(createDeviceDto);
-  }
 
   @Get()
   findAll() {
