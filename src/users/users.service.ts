@@ -68,12 +68,8 @@ export class UsersService implements OnApplicationBootstrap {
     }
 
     const [existingEmail, existingPhone] = await Promise.all([
-      updateUserDto.email
-        ? this.userRepository.findOneByField('email', updateUserDto.email)
-        : null,
-      updateUserDto.phone
-        ? this.userRepository.findOneByField('phone', updateUserDto.phone)
-        : null,
+      updateUserDto.email ? this.userRepository.findOneByField('email', updateUserDto.email) : null,
+      updateUserDto.phone? this.userRepository.findOneByField('phone', updateUserDto.phone): null,
     ]);
 
     if (existingEmail && existingEmail.id !== +id)
@@ -82,7 +78,8 @@ export class UsersService implements OnApplicationBootstrap {
       throw new ConflictException('Số điện thoại đã tồn tại.');
 
     if (avatarFile) {
-      updateUserDto.avatar = `${avatarFile.filename}`; 
+      updateUserDto.avatar = `user/${user.id}/${avatarFile.filename}`; 
+      
       // remove old media
       try {
         await this.unlink(user.avatar)

@@ -7,6 +7,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Express } from 'express'
 import { UserQueryDto } from './dto/query-user.dto';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @ApiBearerAuth()
 @ApiTags('User') 
@@ -50,14 +52,23 @@ export class UsersController {
   @ApiOperation({ summary: 'Cập nhật user' })
   @ApiResponse({ status: 200, description: 'User đã được cập nhật.' })
   @ApiResponse({ status: 404, description: 'User không tồn tại.' })
-  @ApiConsumes('multipart/form-data') // ✅ Quan trọng để Swagger hiển thị file upload
+  @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Thông tin user và avatar',
     type: UpdateUserDto,
   })
   @UseInterceptors(FileInterceptor('avatar', {
     storage: diskStorage({
-      destination: './uploads',
+      destination: (req, file, cb) => {
+        const userId = req.params.id;
+        const uploadPath = path.resolve(process.cwd(), 'uploads', 'user', userId);
+        
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        
+        cb(null, uploadPath);
+      },
       filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         cb(null, uniqueSuffix + '-' + file.originalname);

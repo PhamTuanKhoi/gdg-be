@@ -21,7 +21,7 @@ export class User extends AbstractEntity<User> {
     @Column({ type: 'varchar', length: 255, nullable: false })
     password: string;
 
-    @Column({ type: 'varchar', length: 50, default: 'user' })
+    @Column({ type: 'varchar', length: 50 })
     role: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
