@@ -1,8 +1,9 @@
-version: "3.8"
+version: '3.8'
+
 services:
   mysql:
-    image: mysql:8
-    container_name: mysql_nestjs
+    image: mysql:8.0
+    container_name: my_nest_mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: Mysql7!js
@@ -13,22 +14,6 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-
-  # app:
-  #   build: .
-  #   container_name: nestjs_app
-  #   restart: always
-  #   depends_on:
-  #     - mysql
-  #   environment:
-  #     MYSQL_HOST: mysql
-  #     MYSQL_PORT: 3306
-  #     MYSQL_DATABASE: nestjs_typeorm
-  #     MYSQL_USERNAME: root
-  #     MYSQL_PASSWORD: Mysql7!js
-  #   ports:
-  #     - "3000:3000"
-  #   command: ["npm", "run", "start:prod"]
 
 volumes:
   mysql_data:
