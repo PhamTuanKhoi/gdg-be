@@ -1,9 +1,8 @@
 import {
   Controller,
   Get,
-  HttpException,
-  Param,
   Post,
+  Req,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -39,8 +38,11 @@ export class UploadController {
     }
   }
 
-  @Get(':imgpath(*)')
-  seeUploadedFile(@Param('imgpath') image: string, @Res() res) {
-    return res.sendFile(image, { root: path.resolve(process.cwd(), 'uploads') });
+  @Get('*')
+  seeUploadedFile(@Req() req, @Res() res) {
+    // Lấy toàn bộ đường dẫn sau /upload/ (bao gồm cả dấu "/")
+    const filePath = req.url.replace('/upload/', '');
+    console.log('Request file:', filePath);
+    return res.sendFile(filePath, { root: path.resolve(process.cwd(), 'uploads') });
   }
 }

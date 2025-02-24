@@ -39,7 +39,7 @@ export class UsersService implements OnApplicationBootstrap {
     const newUser: User = await this.userRepository.save({
       ...createUserDto,
       password: hashedPassword,
-      avatar: avatarFile ? `/uploads/${avatarFile.filename}` : null,
+      avatar: avatarFile ? `/upload/user/${avatarFile.filename}` : null,
     });
 
     return newUser;
@@ -78,11 +78,11 @@ export class UsersService implements OnApplicationBootstrap {
       throw new ConflictException('Số điện thoại đã tồn tại.');
 
     if (avatarFile) {
-      updateUserDto.avatar = `user/${user.id}/${avatarFile.filename}`; 
+      updateUserDto.avatar = `/upload/user/${user.id}/${avatarFile.filename}`; 
       
       // remove old media
       try {
-        await this.unlink(user.avatar)
+        await this.unlinkFile(user.avatar)
       } catch (error) {
         console.log('link not found');
       }
@@ -93,16 +93,17 @@ export class UsersService implements OnApplicationBootstrap {
     return this.userRepository.updateUser(id, updateUserDto);
   }
 
-  async unlink(file: string): Promise<void> {
+  async unlinkFile(file: string): Promise<void> {
     if (file && file != null) {
       try {
-        await unlink(resolve(`./uploads/${file}`));
+        // Loại bỏ "upload/" khỏi đường dẫn file nếu nó có
+        const filePath = file.replace(/^\/?upload\//, '');
+        await unlink(resolve(`./uploads/${filePath}`));
       } catch (error) {
-        console.log(`error: link not found`)
+        console.log(`Error: file not found`);
       }
     }
   }
-
 
   remove(id: number) {
     return `This action removes a #${id} user`;

@@ -3,12 +3,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto'; 
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger'; 
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express'; 
 import { Express } from 'express'
-import { UserQueryDto } from './dto/query-user.dto';
-import * as path from 'path';
-import * as fs from 'fs';
+import { UserQueryDto } from './dto/query-user.dto'; 
+import { diskStorageFileName } from 'src/upload/upload.utils';
 
 @ApiBearerAuth()
 @ApiTags('User') 
@@ -33,13 +31,7 @@ export class UsersController {
     type: CreateUserDto,
   })
   @UseInterceptors(FileInterceptor('avatar', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + '-' + file.originalname);
-      }
-    }),
+    storage: diskStorageFileName('user')
   }))
   async createUser(
     @Body() createUserDto: CreateUserDto,
@@ -58,22 +50,7 @@ export class UsersController {
     type: UpdateUserDto,
   })
   @UseInterceptors(FileInterceptor('avatar', {
-    storage: diskStorage({
-      destination: (req, file, cb) => {
-        const userId = req.params.id;
-        const uploadPath = path.resolve(process.cwd(), 'uploads', 'user', userId);
-        
-        if (!fs.existsSync(uploadPath)) {
-          fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        
-        cb(null, uploadPath);
-      },
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + '-' + file.originalname);
-      }
-    }),
+    storage: diskStorageFileName('user')
   }))
   async update(
     @Param('id') id: number,
