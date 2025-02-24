@@ -34,43 +34,78 @@ export class DevicesService {
     return savedDevice;
   }
 
+  async excelSerialToDate(serial: number): Promise<string> {
+    const excelEpoch = new Date(1899, 11, 30);
+    const daysOffset = serial > 59 ? 1 : 0;
+    const dateTime = new Date(excelEpoch.getTime() + ((serial - daysOffset) * 86400000));    
+    // Sử dụng dateTime.toLocaleDateString() hoặc một thư viện format ngày theo múi giờ mong muốn
+    return dateTime.toLocaleDateString('en-CA'); // định dạng yyyy-mm-dd theo chuẩn Canada
+  }
+  
+  
+
   async importDevices(fileBuffer: Buffer): Promise<{ created: number; updated: number; }> {
     // Đọc file Excel từ buffer
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
-    const data: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    // delete row undefind
+    const data: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
+    .filter(row => Object.values(row).some(value => value !== undefined && value !== null && value !== ''));
 
     const result = { created: 0, updated: 0 };
 
     for (const row of data) {
-      const { code, name, location, address, type, status, MANUFACTURER, DESCRIPTION, MODEL, SERIAL, Location } = row;
-      console.log(DESCRIPTION);
+      const { ASSET_NO, MANUFACTURER, DESCRIPTION_VI, DESCRIPTION_EN, MODEL, SERIAL_NO, NCAL_DATE, DUE_DATE, LOCATION } = row;
+      
+      const calibrationDate = typeof NCAL_DATE === 'number' ? await this.excelSerialToDate(NCAL_DATE) : NCAL_DATE;
+      const calibrationEndDate = typeof DUE_DATE === 'number' ? await this.excelSerialToDate(DUE_DATE) : DUE_DATE;
 
+      // find, findBy, findOne, findOneBy skips the query when the value is undefined or null
+      if (!ASSET_NO || ASSET_NO == null) {
+        return
+      }
 
-      let device = await this.devicesRepository.findOneByField('code', row['Asset#']);
+      let device = await this.devicesRepository.findOneByField('code', ASSET_NO);
+
+      console.log({calibrationDate}, {NCAL_DATE});
+      
 
       if (device) {
         // Update nếu device đã tồn tại
-        device.name_vi = name;
-        device.location = location;
-        device.address = address;
-        device.type = type;
-        device.status = status;
+        device.code = ASSET_NO;
+        device.manufacturer = MANUFACTURER;
+        device.model = MODEL;
+        device.serial = SERIAL_NO;
+        device.name_vi = DESCRIPTION_VI;
+        device.name_en = DESCRIPTION_EN;
+        device.calibrationDate = calibrationDate || null;
+        device.calibrationEndDate = calibrationEndDate || null;
+        device.location = LOCATION; 
         await this.devicesRepository.save(device);
         result.updated++;
       } else {
-        // Tạo mới nếu chưa có
-        // await this.devicesRepository.createDevice({ code: row['Asset#'], name_vi: DESCRIPTION, location: MODEL, address, type, status });
+        const payload = {
+          code: ASSET_NO,
+          manufacturer: MANUFACTURER,
+          model: MODEL,
+          serial: SERIAL_NO,
+          name_vi: DESCRIPTION_VI,
+          name_en: DESCRIPTION_EN,
+          calibrationDate: calibrationDate || null,
+          calibrationEndDate: calibrationEndDate || null,
+          location: LOCATION
+        } 
+        
+        await this.devicesRepository.save({...payload});
         result.created++;
       }
     }
 
     return result;
-  }
-
+  } 
 
   findAll() {
-    return `This action returns all devices`;
+    return this.devicesRepository.findAll()
   }
 
   findOne(id: number) {

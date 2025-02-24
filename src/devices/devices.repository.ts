@@ -14,7 +14,12 @@ export class DevicesRepository {
     private readonly mediaRepository: Repository<DeviceMedia>,
   ) {}
 
+  async findAll() {
+    return await this.deviceRepository.find()
+  }
+
   async findOneByField(field: keyof Device, value: any): Promise<Device | null> {
+    if (!value || value == null) {return}
     return await this.deviceRepository.findOne({ where: { [field]: value } });
   }
 
@@ -23,6 +28,8 @@ export class DevicesRepository {
   }
 
   async save(device: Partial<Device>): Promise<Device> {
+    console.log({deviceaa: device});
+    
     return await this.deviceRepository.save(device) as Device;
   }
 
