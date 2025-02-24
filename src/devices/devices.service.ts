@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { DevicesRepository } from './devices.repository';
 import { Device } from './entities/device.entity';
 import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
+import { DeviceQueryDto } from './dto/query-devices.dto';
 
 
 @Injectable()
@@ -104,8 +105,8 @@ export class DevicesService {
     return result;
   } 
 
-  findAll() {
-    return this.devicesRepository.findAll()
+  async findAll(queryDto: DeviceQueryDto) {
+    return await this.devicesRepository.findAll(queryDto);
   }
 
   findOne(id: number) {

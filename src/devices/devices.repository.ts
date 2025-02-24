@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm'; 
 import { Device } from './entities/device.entity';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
+import { DeviceQueryDto } from './dto/query-devices.dto';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm'; 
 
 @Injectable()
 export class DevicesRepository {
@@ -14,9 +15,37 @@ export class DevicesRepository {
     private readonly mediaRepository: Repository<DeviceMedia>,
   ) {}
 
-  async findAll() {
-    return await this.deviceRepository.find()
-  }
+  async findAll({
+    query,
+    order,
+    key,
+    pageIndex = 1,
+    pageSize = 10,
+  }: DeviceQueryDto): Promise<{ total: number; pageIndex: number; pageSize: number; data: Device[] }> {
+    const where: FindOptionsWhere<Device>[] = [];
+
+    // ✅ Apply full-text search on all columns
+    if (query) {
+      where.push(
+        { code: ILike(`%${query}%`) },
+        { name_vi: ILike(`%${query}%`) },
+        { name_en: ILike(`%${query}%`) },
+        { manufacturer: ILike(`%${query}%`) },
+        { serial: ILike(`%${query}%`) },
+        { model: ILike(`%${query}%`) },
+      );
+    }
+    
+    // ✅ Use findAndCount to reduce query times
+    const [data, total] = await this.deviceRepository.findAndCount({
+      where: where.length ? where : undefined,
+      order:  key ? { [key]: order.toUpperCase() as 'ASC' | 'DESC' } : undefined,
+      skip: (pageIndex - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return { total, pageIndex, pageSize, data };
+  } 
 
   async findOneByField(field: keyof Device, value: any): Promise<Device | null> {
     if (!value || value == null) {return}
