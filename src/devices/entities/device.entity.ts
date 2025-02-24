@@ -31,6 +31,9 @@ export class Device extends AbstractEntity<Device> {
     @Column({ type: 'date', nullable: true })
     calibrationEndDate: Date;    
 
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    certificate: string;  
+
     // ----------------- order ----------------------
     @Column({ type: 'varchar', length: 100, nullable: true })
     type: string;
