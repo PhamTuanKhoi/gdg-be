@@ -44,7 +44,7 @@ export class DevicesRepository {
       take: pageSize,
     });
 
-    return { total, pageIndex, pageSize, data };
+    return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
   } 
 
   async findOneByField(field: keyof Device, value: any): Promise<Device | null> {
