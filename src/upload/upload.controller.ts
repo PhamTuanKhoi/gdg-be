@@ -1,9 +1,46 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UploadService } from './upload.service'; 
+import {
+  Controller,
+  Get,
+  HttpException,
+  Param,
+  Post,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { Express } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer'; 
+import { editFileName, imageFileFilter } from './upload.utils';
+import * as path from 'path';
 
 @Controller('upload')
 export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+  @Post('/')
+  @UseInterceptors(
+    FileInterceptor('photo', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  uploadImage(@UploadedFile() file: Express.Multer.File) {
+    try {
+      const response = {
+        originalname: file.originalname,
+        filename: file.filename,
+        url: `upload/${file.filename}`,
+      };
+      return response;
+    } catch (e: any) {
+      console.log(e);
+    }
+  }
 
-   
+  @Get(':imgpath(*)')
+  seeUploadedFile(@Param('imgpath') image: string, @Res() res) {
+    return res.sendFile(image, { root: path.resolve(process.cwd(), 'uploads') });
+  }
 }
