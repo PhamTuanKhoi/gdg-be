@@ -4,12 +4,11 @@ import {
   HttpStatus,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common'; 
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { LoginUserDto } from './dto/login-user.dto';
-import * as bcrypt from "bcrypt";
-
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -24,10 +23,8 @@ export class AuthService {
     if (!user)
       throw new HttpException(`Username không tồn tại !`, HttpStatus.NOT_FOUND);
 
-    const match_email = await bcrypt.compare(
-      pass, user?.password,
-    );
-    
+    const match_email = await bcrypt.compare(pass, user?.password);
+
     if (!match_email)
       throw new HttpException(`Mật khẩu không đúng!`, HttpStatus.BAD_GATEWAY);
 
@@ -37,38 +34,41 @@ export class AuthService {
     }
 
     return null;
-  } 
+  }
 
   async login(loginUserDto: LoginUserDto) {
-    const user = await this.usersService.findByUsername(loginUserDto.username); 
+    const user = await this.usersService.findByUsername(loginUserDto.username);
     const payload = {
       id: user.id,
-      email: user.name, 
-    }; 
-     
+      email: user.name,
+    };
+
+    const { password, ...rest } = user;
+
     return {
       access_token: this.jwtService.sign(payload),
-      user: { username: user.name },
+      user: rest,
     };
   }
 
-  async verifyJwt(token) {
+  async verifyJwt(token: string) {
     try {
       if (!token) {
         throw new UnauthorizedException();
-      } 
+      }
 
       const { id, exp } = await this.jwtService.verifyAsync(token);
 
-      const data = await this.usersService.findById(id);  
+      const data = await this.usersService.findById(id);
       if (!data) {
         throw new UnauthorizedException();
       }
-      return { user: { id, name: data.name, username: data.username, role: data.role }, exp };
+      return {
+        user: { id, name: data.name, username: data.username, role: data.role },
+        exp,
+      };
     } catch (error) {
       throw new UnauthorizedException();
     }
   }
-
-  
 }
