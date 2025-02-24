@@ -12,6 +12,7 @@ async function bootstrap() {
 
   // Cho phép truy cập file trong thư mục uploads
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
+  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('Device example')

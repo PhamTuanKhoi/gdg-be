@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, HttpStatus, HttpException, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, HttpStatus, HttpException, UploadedFiles, Query } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
@@ -7,6 +7,7 @@ import { ApiConsumes, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestj
 import { ImportResultDto } from './dto/import-device.dto';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { DeviceQueryDto } from './dto/query-devices.dto';
 
 @Controller('devices')
 export class DevicesController {
@@ -64,8 +65,10 @@ export class DevicesController {
 
 
   @Get()
-  findAll() {
-    return this.devicesService.findAll();
+  @ApiOperation({ summary: 'Lấy danh sách device có phân trang, tìm kiếm và sắp xếp' })
+  @ApiResponse({ status: 200, description: 'Danh sách device được trả về.' })
+  async getAllUsers(@Query() queryDto: DeviceQueryDto) {
+    return this.devicesService.findAll(queryDto);
   }
 
   @Get(':id')

@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { DevicesRepository } from './devices.repository';
 import { Device } from './entities/device.entity';
 import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
+import { DeviceQueryDto } from './dto/query-devices.dto';
 
 
 @Injectable()
@@ -34,43 +35,80 @@ export class DevicesService {
     return savedDevice;
   }
 
+  async excelSerialToDate(serial: number): Promise<string> {
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30)); // Ngày gốc của Excel tính theo UTC
+    const daysOffset = serial > 59 ? 1 : 0; // Bù lỗi năm 1900 của Excel
+    const millisecondsInDay = 86400000;
+    // Tính toán ngày, sau đó cộng thêm 1 ngày
+    const dateTime = new Date(excelEpoch.getTime() + ((serial - daysOffset) * millisecondsInDay) + millisecondsInDay);
+  
+    // Định dạng theo yyyy-mm-dd dựa trên UTC
+    const year = dateTime.getUTCFullYear();
+    const month = String(dateTime.getUTCMonth() + 1).padStart(2, '0'); // Tháng từ 0 nên cần cộng 1
+    const day = String(dateTime.getUTCDate()).padStart(2, '0');
+  
+    return `${year}-${month}-${day}`;
+  }
+  
   async importDevices(fileBuffer: Buffer): Promise<{ created: number; updated: number; }> {
     // Đọc file Excel từ buffer
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
-    const data: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    // delete row undefind
+    const data: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
+    .filter(row => Object.values(row).some(value => value !== undefined && value !== null && value !== ''));
 
     const result = { created: 0, updated: 0 };
 
     for (const row of data) {
-      const { code, name, location, address, type, status, MANUFACTURER, DESCRIPTION, MODEL, SERIAL, Location } = row;
-      console.log(DESCRIPTION);
+      const { ASSET_NO, MANUFACTURER, DESCRIPTION_VI, DESCRIPTION_EN, MODEL, SERIAL_NO, NCAL_DATE, DUE_DATE, LOCATION } = row;
+      
+      const calibrationDate = typeof NCAL_DATE === 'number' ? await this.excelSerialToDate(NCAL_DATE) : NCAL_DATE;
+      const calibrationEndDate = typeof DUE_DATE === 'number' ? await this.excelSerialToDate(DUE_DATE) : DUE_DATE;
 
+      // find, findBy, findOne, findOneBy skips the query when the value is undefined or null
+      if (!ASSET_NO || ASSET_NO == null) {
+        return
+      }
 
-      let device = await this.devicesRepository.findOneByField('code', row['Asset#']);
+      let device = await this.devicesRepository.findOneByField('code', ASSET_NO);
 
       if (device) {
         // Update nếu device đã tồn tại
-        device.name_vi = name;
-        device.location = location;
-        device.address = address;
-        device.type = type;
-        device.status = status;
+        device.code = ASSET_NO;
+        device.manufacturer = MANUFACTURER;
+        device.model = MODEL;
+        device.serial = SERIAL_NO;
+        device.name_vi = DESCRIPTION_VI;
+        device.name_en = DESCRIPTION_EN;
+        device.calibrationDate = calibrationDate || null;
+        device.calibrationEndDate = calibrationEndDate || null;
+        device.location = LOCATION; 
         await this.devicesRepository.save(device);
         result.updated++;
       } else {
-        // Tạo mới nếu chưa có
-        // await this.devicesRepository.createDevice({ code: row['Asset#'], name_vi: DESCRIPTION, location: MODEL, address, type, status });
+        const payload = {
+          code: ASSET_NO,
+          manufacturer: MANUFACTURER,
+          model: MODEL,
+          serial: SERIAL_NO,
+          name_vi: DESCRIPTION_VI,
+          name_en: DESCRIPTION_EN,
+          calibrationDate: calibrationDate || null,
+          calibrationEndDate: calibrationEndDate || null,
+          location: LOCATION
+        } 
+        
+        await this.devicesRepository.save({...payload});
         result.created++;
       }
     }
 
     return result;
-  }
+  } 
 
-
-  findAll() {
-    return `This action returns all devices`;
+  async findAll(queryDto: DeviceQueryDto) {
+    return await this.devicesRepository.findAll(queryDto);
   }
 
   findOne(id: number) {
