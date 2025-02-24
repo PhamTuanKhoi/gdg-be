@@ -36,15 +36,20 @@ export class DevicesService {
   }
 
   async excelSerialToDate(serial: number): Promise<string> {
-    const excelEpoch = new Date(1899, 11, 30);
-    const daysOffset = serial > 59 ? 1 : 0;
-    const dateTime = new Date(excelEpoch.getTime() + ((serial - daysOffset) * 86400000));    
-    // Sử dụng dateTime.toLocaleDateString() hoặc một thư viện format ngày theo múi giờ mong muốn
-    return dateTime.toLocaleDateString('en-CA'); // định dạng yyyy-mm-dd theo chuẩn Canada
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30)); // Ngày gốc của Excel tính theo UTC
+    const daysOffset = serial > 59 ? 1 : 0; // Bù lỗi năm 1900 của Excel
+    const millisecondsInDay = 86400000;
+    // Tính toán ngày, sau đó cộng thêm 1 ngày
+    const dateTime = new Date(excelEpoch.getTime() + ((serial - daysOffset) * millisecondsInDay) + millisecondsInDay);
+  
+    // Định dạng theo yyyy-mm-dd dựa trên UTC
+    const year = dateTime.getUTCFullYear();
+    const month = String(dateTime.getUTCMonth() + 1).padStart(2, '0'); // Tháng từ 0 nên cần cộng 1
+    const day = String(dateTime.getUTCDate()).padStart(2, '0');
+  
+    return `${year}-${month}-${day}`;
   }
   
-  
-
   async importDevices(fileBuffer: Buffer): Promise<{ created: number; updated: number; }> {
     // Đọc file Excel từ buffer
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
@@ -67,9 +72,6 @@ export class DevicesService {
       }
 
       let device = await this.devicesRepository.findOneByField('code', ASSET_NO);
-
-      console.log({calibrationDate}, {NCAL_DATE});
-      
 
       if (device) {
         // Update nếu device đã tồn tại
