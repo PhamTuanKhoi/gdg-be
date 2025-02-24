@@ -2,12 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, Upl
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { ApiConsumes, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ImportResultDto } from './dto/import-device.dto';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { DeviceQueryDto } from './dto/query-devices.dto';
+import { diskStorageFileName } from 'src/upload/upload.utils';
 
 @Controller('devices')
 export class DevicesController {
@@ -21,19 +20,16 @@ export class DevicesController {
     type: CreateDeviceDto,
   })
   @UseInterceptors(
-    FilesInterceptor('files', 10, {
-      storage: diskStorage({
-        destination: './uploads/', // Đường dẫn lưu file
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
+    FileFieldsInterceptor([
+      { name: 'files', maxCount: 5 },
+      { name: 'certificate', maxCount: 1 },
+    ], {
+      storage: diskStorageFileName('device')
     }),
   )
   async createDevice(
     @Body() createDeviceDto: CreateDeviceDto,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files: { files?: Express.Multer.File[]; certificate?: Express.Multer.File[] }
   ) {
     return this.devicesService.createDevice(createDeviceDto, files);
   }
@@ -84,20 +80,17 @@ export class DevicesController {
     type: UpdateDeviceDto, // Bạn có thể tạo DTO riêng cho update nếu cần
   })
   @UseInterceptors(
-    FilesInterceptor('files', 10, {
-      storage: diskStorage({
-        destination: './uploads/', // Đường dẫn lưu file
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
+    FileFieldsInterceptor([
+      { name: 'files', maxCount: 5 },
+      { name: 'certificate', maxCount: 1 },
+    ], {
+      storage: diskStorageFileName('device')
     }),
   )
   async updateDevice(
     @Param('id') id: number,
     @Body() updateDeviceDto: UpdateDeviceDto,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files: { files?: Express.Multer.File[]; certificate?: Express.Multer.File[] }
   ) {
     return this.devicesService.update(id, updateDeviceDto, files);
   }

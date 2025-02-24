@@ -14,9 +14,16 @@ export class DevicesService {
     private readonly devicesRepository: DevicesRepository
   ) { }
 
-  async createDevice(createDeviceDto: CreateDeviceDto, files: Express.Multer.File[]): Promise<Device> {
+  async createDevice(
+    createDeviceDto: CreateDeviceDto, 
+    files: { files?: Express.Multer.File[]; certificate?: Express.Multer.File[] 
+    }): Promise<Device> {
     const existingCode =  await this.devicesRepository.findOneByField('code', createDeviceDto.code) 
     if (existingCode && existingCode !== null) throw new ConflictException('Code đã tồn tại.'); 
+
+    if (files.certificate && files.certificate.length > 0) { 
+      createDeviceDto.certificate = `/upload/device/${files.certificate[0].filename}`; // chỉ 1 file certificate 
+    }
 
     // Create Device object from DTO
     const device = await this.devicesRepository.create(createDeviceDto);
@@ -24,10 +31,10 @@ export class DevicesService {
     const savedDevice = await this.devicesRepository.save(device);
 
     // Save the uploaded files to DeviceMedia
-    if (files.length > 0) {
-      for (const file of files) {
+    if (files?.files?.length > 0) {
+      for (const file of files.files) {
         await this.devicesRepository.saveMedia({
-          media: `/uploads/devices/${file.filename}`,
+          media: `/upload/device/${file.filename}`,
           device: savedDevice,
         });
       }
@@ -115,7 +122,9 @@ export class DevicesService {
     return `This action returns a #${id} device`;
   }
 
-  async update(id: number, updateDeviceDto: UpdateDeviceDto, files: Express.Multer.File[]) {
+  async update(id: number, updateDeviceDto: UpdateDeviceDto, 
+    files: { files?: Express.Multer.File[]; certificate?: Express.Multer.File[] }
+    ) {
     const device = await this.devicesRepository.findById(id);
     if (!device) {
       throw new NotFoundException(`Device with id ${id} not found`);
@@ -129,14 +138,18 @@ export class DevicesService {
 
     // Update device information from DTO
     Object.assign(device, updateDeviceDto);
-     
-    if (files?.length > 0) {
-      for (const file of files) {
+
+    if (files?.files?.length > 0) {
+      for (const file of files.files) {
         await this.devicesRepository.saveMedia({
-          media: `/uploads/devices/${file.filename}`,
+          media: `/upload/device/${device.id}/${file.filename}`,
           device: device,
         });
       }
+    } 
+
+    if (files.certificate && files.certificate.length > 0) {  
+      device.certificate = `/upload/device/${device.id}/${files.certificate[0].filename}`; // chỉ 1 file certificate 
     }
  
     return await this.devicesRepository.save(device);

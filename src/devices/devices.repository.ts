@@ -56,9 +56,7 @@ export class DevicesRepository {
     return await this.findOneByField('id', id);
   }
 
-  async save(device: Partial<Device>): Promise<Device> {
-    console.log({deviceaa: device});
-    
+  async save(device: Partial<Device>): Promise<Device> { 
     return await this.deviceRepository.save(device) as Device;
   }
 

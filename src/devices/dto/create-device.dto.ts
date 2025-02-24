@@ -68,8 +68,12 @@ export class CreateDeviceDto {
   @IsString()
   status?: string;
 
-  @ApiProperty({ type: 'string', format: 'binary', isArray: true, description: 'List of files' })
+  @ApiProperty({ type: 'string', format: 'binary', isArray: true, description: 'List of files', required: false })
   @IsOptional()
   files?: any[];
+
+  @ApiProperty({ type: 'string', format: 'binary', description: 'Certificate file', required: false })
+  @IsOptional()
+  certificate?: any;
 }
 
