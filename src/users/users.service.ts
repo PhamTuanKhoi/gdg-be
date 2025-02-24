@@ -6,6 +6,8 @@ import * as bcrypt from "bcrypt";
 import { UserRoleEnum } from './enums/user.role.enum';
 import { User } from './entities/user.entity';
 import { UserQueryDto } from './dto/query-user.dto';
+import { unlink } from 'fs/promises';
+import { resolve } from 'path';
 
 
 @Injectable()
@@ -63,12 +65,28 @@ export class UsersService implements OnApplicationBootstrap {
     if (existingPhone && existingPhone.id !== +id) throw new ConflictException('Số điện thoại đã tồn tại.');
 
     if (avatarFile) {
-        updateUserDto.avatar = `/uploads/${avatarFile.filename}`;
+      updateUserDto.avatar = `${avatarFile.filename}`; 
+      // remove old media
+      try {
+        await this.unlink(user.avatar)
+      } catch (error) {
+        console.log('link not found');
+      }
     } else {
       delete updateUserDto.avatar
     }
 
     return this.userRepository.updateUser(id, updateUserDto);
+  }
+
+  async unlink(file: string): Promise<void> {
+    if (file && file != null) {
+      try {
+        await unlink(resolve(`./uploads/${file}`));
+      } catch (error) {
+        console.log(`error: link not found`)
+      }
+    }
   }
 
 
