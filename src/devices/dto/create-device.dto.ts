@@ -106,6 +106,16 @@ export class CreateDeviceDto {
   period?: number;
 
   @ApiProperty({
+    type: 'number',
+    example: 12,
+    description: 'Notifcation Time (ngày thông báo hiệu chuẩn)',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  notifcation_time?: number;
+
+  @ApiProperty({
     type: 'string',
     example: 'active',
     description: 'Status of the device',
