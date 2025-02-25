@@ -55,6 +55,13 @@ export class DevicesRepository extends BaseRepository<Device> {
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
   }
 
+  async findByIdRelation(id: number): Promise<Device> {
+    return await this.deviceRepository.findOne({
+      where: { id },
+      relations: ['medias'],
+    });
+  }
+
   async saveMedia(media: Partial<DeviceMedia>): Promise<DeviceMedia> {
     return await this.mediaRepository.save(media);
   }

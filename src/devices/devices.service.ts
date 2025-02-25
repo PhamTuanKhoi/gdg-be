@@ -157,7 +157,7 @@ export class DevicesService {
   }
 
   async findOne(id: number) {
-    return await this.devicesRepository.findById(id)
+    return await this.devicesRepository.findByIdRelation(id)
   }
 
   async update(
