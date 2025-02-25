@@ -4,7 +4,7 @@ import { UpdateDeviceDto } from './dto/update-device.dto';
 import * as XLSX from 'xlsx';
 import { DevicesRepository } from './devices.repository';
 import { Device } from './entities/device.entity';
-import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
+import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 import { DeviceQueryDto } from './dto/query-devices.dto';
 
 

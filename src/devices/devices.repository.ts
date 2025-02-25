@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Device } from './entities/device.entity';
-import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
+import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 import { DeviceQueryDto } from './dto/query-devices.dto';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm'; 
 import { BaseRepository } from 'src/database/abstract.repository';
