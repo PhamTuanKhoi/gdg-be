@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm'; 
+import { FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserQueryDto } from './dto/query-user.dto';
 
@@ -17,7 +17,13 @@ export class UserRepository {
     key,
     pageIndex = 1,
     pageSize = 10,
-  }: UserQueryDto): Promise<{ total: number; pageIndex: number; pageSize: number; data: User[] }> {
+    roles,
+  }: UserQueryDto): Promise<{
+    total: number;
+    pageIndex: number;
+    pageSize: number;
+    data: User[];
+  }> {
     const where: FindOptionsWhere<User>[] = [];
 
     // ✅ Apply full-text search on all columns
@@ -27,15 +33,18 @@ export class UserRepository {
         { username: ILike(`%${query}%`) },
         { email: ILike(`%${query}%`) },
         { phone: ILike(`%${query}%`) },
-        { role: ILike(`%${query}%`) },
         { position: ILike(`%${query}%`) },
       );
     }
-    
+
+    if (roles && roles.length > 0) {
+      where.push({ role: In(roles) });
+    }
+
     // ✅ Use findAndCount to reduce query times
     const [data, total] = await this.userRepository.findAndCount({
       where: where.length ? where : undefined,
-      order:  key ? { [key]: order.toUpperCase() as 'ASC' | 'DESC' } : undefined,
+      order: key ? { [key]: order.toUpperCase() as 'ASC' | 'DESC' } : undefined,
       skip: (pageIndex - 1) * pageSize,
       take: pageSize,
     });
@@ -52,11 +61,16 @@ export class UserRepository {
   }
 
   async save(user: Partial<User>): Promise<User> {
-    return await this.userRepository.save(user) as User;  
+    return (await this.userRepository.save(user)) as User;
   }
 
   async updateUser(id: number, updateUserDto: Partial<User>): Promise<User> {
     await this.userRepository.update(id, updateUserDto);
-    return await this.findById(id);  
+    return await this.findById(id);
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const result = await this.userRepository.delete(id);
+    return result.affected > 0;
   }
 }

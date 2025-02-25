@@ -1,21 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto'; 
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger'; 
-import { FileInterceptor } from '@nestjs/platform-express'; 
-import { Express } from 'express'
-import { UserQueryDto } from './dto/query-user.dto'; 
+import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
+import { UserQueryDto } from './dto/query-user.dto';
 import { diskStorageFileName } from 'src/upload/upload.utils';
 
 @ApiBearerAuth()
-@ApiTags('User') 
+@ApiTags('User')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Lấy danh sách user có phân trang, tìm kiếm và sắp xếp' })
+  @ApiOperation({
+    summary: 'Lấy danh sách user có phân trang, tìm kiếm và sắp xếp',
+  })
   @ApiResponse({ status: 200, description: 'Danh sách user được trả về.' })
   async getAllUsers(@Query() queryDto: UserQueryDto) {
     return this.usersService.findAllUsers(queryDto);
@@ -24,15 +44,20 @@ export class UsersController {
   @Post('create')
   @ApiOperation({ summary: 'Tạo user mới với avatar' })
   @ApiResponse({ status: 201, description: 'User đã được tạo.' })
-  @ApiResponse({ status: 409, description: 'Username, email hoặc phone đã tồn tại.' })
+  @ApiResponse({
+    status: 409,
+    description: 'Username, email hoặc phone đã tồn tại.',
+  })
   @ApiConsumes('multipart/form-data') // 📌 Quan trọng để Swagger nhận diện file upload
   @ApiBody({
     description: 'Thông tin user và avatar',
     type: CreateUserDto,
   })
-  @UseInterceptors(FileInterceptor('avatar', {
-    storage: diskStorageFileName('user')
-  }))
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorageFileName('user'),
+    }),
+  )
   async createUser(
     @Body() createUserDto: CreateUserDto,
     @UploadedFile() avatarFile?: Express.Multer.File,
@@ -49,9 +74,11 @@ export class UsersController {
     description: 'Thông tin user và avatar',
     type: UpdateUserDto,
   })
-  @UseInterceptors(FileInterceptor('avatar', {
-    storage: diskStorageFileName('user')
-  }))
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorageFileName('user'),
+    }),
+  )
   async update(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -61,7 +88,14 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete user' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user by id' })
+  findById(@Param('id') id: string) {
+    return this.usersService.findById(+id);
   }
 }
