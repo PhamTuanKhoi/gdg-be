@@ -3,13 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserQueryDto } from './dto/query-user.dto';
+import { BaseRepository } from 'src/database/abstract.repository';
 
 @Injectable()
-export class UserRepository {
+export class UserRepository extends BaseRepository<User> {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) {
+    super(userRepository)
+  }
 
   async findAll({
     query,
@@ -50,27 +53,5 @@ export class UserRepository {
     });
 
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
-  }
-
-  async findOneByField(field: keyof User, value: any): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { [field]: value } });
-  }
-
-  async findById(id: number): Promise<User | null> {
-    return this.findOneByField('id', id);
-  }
-
-  async save(user: Partial<User>): Promise<User> {
-    return (await this.userRepository.save(user)) as User;
-  }
-
-  async updateUser(id: number, updateUserDto: Partial<User>): Promise<User> {
-    await this.userRepository.update(id, updateUserDto);
-    return await this.findById(id);
-  }
-
-  async delete(id: number): Promise<boolean> {
-    const result = await this.userRepository.delete(id);
-    return result.affected > 0;
   }
 }

@@ -94,7 +94,7 @@ export class UsersService implements OnApplicationBootstrap {
       delete updateUserDto.avatar;
     }
 
-    return this.userRepository.updateUser(id, updateUserDto);
+    return this.userRepository.update(id, updateUserDto);
   }
 
   async unlinkFile(file: string): Promise<void> {

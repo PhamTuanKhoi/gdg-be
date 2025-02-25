@@ -1,4 +1,4 @@
-import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
+import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 import { AbstractEntity } from '../../../src/database/abstract.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 

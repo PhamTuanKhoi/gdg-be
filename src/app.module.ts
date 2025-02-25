@@ -5,8 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/guard/roles.guard';
-import { DevicesModule } from './devices/devices.module';
-import { DeviceMediasModule } from './device-medias/device-medias.module';
+import { DevicesModule } from './devices/devices.module'; 
 import { UploadModule } from './upload/upload.module';
 
 @Module({
@@ -14,7 +13,7 @@ import { UploadModule } from './upload/upload.module';
     DatabaseModule, 
     UsersModule, 
     AuthModule, 
-    DevicesModule, DeviceMediasModule, UploadModule
+    DevicesModule, UploadModule
   ],
   controllers: [],
   providers: [

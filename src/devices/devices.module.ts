@@ -4,7 +4,7 @@ import { DevicesController } from './devices.controller';
 import { DevicesRepository } from './devices.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Device } from './entities/device.entity';
-import { DeviceMedia } from 'src/device-medias/entities/device-media.entity';
+import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Device, DeviceMedia])],
