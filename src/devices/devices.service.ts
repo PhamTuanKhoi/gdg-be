@@ -156,8 +156,8 @@ export class DevicesService {
     return await this.devicesRepository.findAll(queryDto);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} device`;
+  async findOne(id: number) {
+    return await this.devicesRepository.findById(id)
   }
 
   async update(
@@ -209,7 +209,7 @@ export class DevicesService {
     return await this.devicesRepository.rmoveMedia(deviceMedia);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} device`;
+  async remove(id: number) {
+    return await this.devicesRepository.delete(id)
   }
 }

@@ -49,6 +49,7 @@ export class DevicesRepository extends BaseRepository<Device> {
       order: key ? { [key]: order.toUpperCase() as 'ASC' | 'DESC' } : undefined,
       skip: (pageIndex - 1) * pageSize,
       take: pageSize,
+      relations: ['medias'],
     });
 
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
