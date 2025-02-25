@@ -41,8 +41,7 @@ export class UploadController {
   @Get('*')
   seeUploadedFile(@Req() req, @Res() res) {
     // Lấy toàn bộ đường dẫn sau /upload/ (bao gồm cả dấu "/")
-    const filePath = req.url.replace('/upload/', '');
-    console.log('Request file:', filePath);
+    const filePath = req.url.replace('/upload/', ''); 
     return res.sendFile(filePath, { root: path.resolve(process.cwd(), 'uploads') });
   }
 }
