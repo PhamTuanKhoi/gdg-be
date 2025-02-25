@@ -68,8 +68,12 @@ export class UsersService implements OnApplicationBootstrap {
     }
 
     const [existingEmail, existingPhone] = await Promise.all([
-      updateUserDto.email ? this.userRepository.findOneByField('email', updateUserDto.email) : null,
-      updateUserDto.phone? this.userRepository.findOneByField('phone', updateUserDto.phone): null,
+      updateUserDto.email
+        ? this.userRepository.findOneByField('email', updateUserDto.email)
+        : null,
+      updateUserDto.phone
+        ? this.userRepository.findOneByField('phone', updateUserDto.phone)
+        : null,
     ]);
 
     if (existingEmail && existingEmail.id !== +id)
@@ -78,11 +82,11 @@ export class UsersService implements OnApplicationBootstrap {
       throw new ConflictException('Số điện thoại đã tồn tại.');
 
     if (avatarFile) {
-      updateUserDto.avatar = `/upload/user/${user.id}/${avatarFile.filename}`; 
-      
+      updateUserDto.avatar = `/upload/user/${user.id}/${avatarFile.filename}`;
+
       // remove old media
       try {
-        await this.unlinkFile(user.avatar)
+        await this.unlinkFile(user.avatar);
       } catch (error) {
         console.log('link not found');
       }
@@ -105,8 +109,9 @@ export class UsersService implements OnApplicationBootstrap {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    await this.userRepository.delete(id);
+    return true;
   }
 
   async onApplicationBootstrap() {

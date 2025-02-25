@@ -1,35 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, IsString, IsIn } from 'class-validator';
-import { Type } from 'class-transformer'; 
+import { IsArray, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { CommonQueryDto } from 'src/common/dto/CommonQuery';
 
-export class UserQueryDto {
-  @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại' })
+export class UserQueryDto extends CommonQueryDto {
+  @ApiPropertyOptional({ example: '["1"]' })
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  pageIndex?: number = 1;
-
-  @ApiPropertyOptional({ example: 10, description: 'Số lượng user mỗi trang' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  pageSize?: number = 10;
-
-  @ApiPropertyOptional({ example: 'john', description: 'Tìm kiếm theo tất cả các field' })
-  @IsOptional()
-  @IsString()
-  query?: string;
-
-  @ApiPropertyOptional({ example: 'asc', enum: ['asc', 'desc', ''] })
-  @IsOptional()
-  @IsIn(['asc', 'desc', ''])
-  order?: 'asc' | 'desc' | '';
-
-  @ApiPropertyOptional({ example: 'username', description: 'Cột sắp xếp' })
-  @IsOptional()
-  @IsString()
-  key?: string;
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  roles?: string[];
 }
-
