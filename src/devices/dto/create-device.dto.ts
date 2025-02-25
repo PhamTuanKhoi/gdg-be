@@ -3,21 +3,33 @@ import { Type } from 'class-transformer';
 import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateDeviceDto {
-  @ApiProperty({ type: 'string', example: 'ABC123', description: 'Device code' })
+  @ApiProperty({
+    type: 'string',
+    example: 'ABC123',
+    description: 'Device code',
+  })
   @IsString()
   code: string;
 
-  @ApiProperty({ type: 'string', example: 'Device Name VI', description: 'Device name in Vietnamese' })
+  @ApiProperty({
+    type: 'string',
+    example: 'Device Name VI',
+    description: 'Device name in Vietnamese',
+  })
   @IsOptional()
   @IsString()
   name_vi?: string;
 
-  @ApiProperty({ type: 'string', example: 'Device Name EN', description: 'Device name in English' })
+  @ApiProperty({
+    type: 'string',
+    example: 'Device Name EN',
+    description: 'Device name in English',
+  })
   @IsOptional()
   @IsString()
   name_en?: string;
 
-  @ApiProperty({ type: 'string', example: 'Sony', description: 'Manufacturer' })  
+  @ApiProperty({ type: 'string', example: 'Sony', description: 'Manufacturer' })
   @IsOptional()
   @IsString()
   manufacturer?: string;
@@ -27,53 +39,97 @@ export class CreateDeviceDto {
   @IsString()
   model?: string;
 
-  @ApiProperty({ type: 'string', example: 'SN123456789', description: 'Serial Number' })
+  @ApiProperty({
+    type: 'string',
+    example: 'SN123456789',
+    description: 'Serial Number',
+  })
   @IsOptional()
   @IsString()
   serial?: string;
 
-  @ApiProperty({ type: 'string', example: 'Hanoi, Vietnam', description: 'Location' })
+  @ApiProperty({
+    type: 'string',
+    example: 'Hanoi, Vietnam',
+    description: 'Location',
+  })
   @IsOptional()
   @IsString()
   location?: string;
 
-  @ApiProperty({ type: 'string', format: 'date', example: '2025-01-01', description: 'Calibration date' })
+  @ApiProperty({
+    type: 'string',
+    format: 'date',
+    example: '2025-01-01',
+    description: 'Calibration date',
+  })
   @IsOptional()
   @IsDateString()
-  calibrationDate?: Date;
+  last?: Date;
 
-  @ApiProperty({ type: 'string', format: 'date', example: '2025-12-31', description: 'Calibration end date' })
+  @ApiProperty({
+    type: 'string',
+    format: 'date',
+    example: '2025-12-31',
+    description: 'Calibration end date',
+  })
   @IsOptional()
   @IsDateString()
-  calibrationEndDate?: Date;
+  next?: Date;
 
-  @ApiProperty({ type: 'string', example: 'Type A', description: 'Device type' })
+  @ApiProperty({
+    type: 'string',
+    example: 'Type A',
+    description: 'Device type',
+  })
   @IsOptional()
   @IsString()
   type?: string;
 
-  @ApiProperty({ type: 'number', example: 12, description: 'Period (số tháng hoặc năm tùy theo context)' })
+  @ApiProperty({
+    type: 'string',
+    example: 'At company ABC',
+    description: 'Device place',
+  })
+  @IsOptional()
+  @IsString()
+  place?: string;
+
+  @ApiProperty({
+    type: 'number',
+    example: 12,
+    description: 'Period (số tháng hoặc năm tùy theo context)',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   period?: number;
 
-  @ApiProperty({ type: 'string', example: '123 ABC Street', description: 'Address' })
-  @IsOptional()
-  @IsString()
-  address?: string;
-
-  @ApiProperty({ type: 'string', example: 'active', description: 'Status of the device' })
+  @ApiProperty({
+    type: 'string',
+    example: 'active',
+    description: 'Status of the device',
+  })
   @IsOptional()
   @IsString()
   status?: string;
 
-  @ApiProperty({ type: 'string', format: 'binary', isArray: true, description: 'List of files', required: false })
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    isArray: true,
+    description: 'List of files',
+    required: false,
+  })
   @IsOptional()
   files?: any[];
 
-  @ApiProperty({ type: 'string', format: 'binary', description: 'Certificate file', required: false })
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Certificate file',
+    required: false,
+  })
   @IsOptional()
   certificate?: any;
 }
-

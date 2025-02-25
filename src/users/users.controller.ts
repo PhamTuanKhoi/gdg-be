@@ -41,7 +41,7 @@ export class UsersController {
     return this.usersService.findAllUsers(queryDto);
   }
 
-  @Post('create')
+  @Post()
   @ApiOperation({ summary: 'Tạo user mới với avatar' })
   @ApiResponse({ status: 201, description: 'User đã được tạo.' })
   @ApiResponse({
