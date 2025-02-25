@@ -5,11 +5,22 @@ export abstract class BaseRepository<T> {
   constructor(protected readonly repository: Repository<T>) {}
 
   async findOneByField(field: keyof T, value: any): Promise<T | null> {
+    if (!value || value == null) {return}
     return this.repository.findOne({ where: { [field]: value } as FindOptionsWhere<T> });
   }
 
   async findById(id: number): Promise<T | null> {
     return this.findOneByField('id' as keyof T, id);
+  }
+
+  async create(entityData: DeepPartial<T>): Promise<T> {
+    return this.repository.create(entityData);
+  }
+
+  // If you want to save to DB now
+  async createAndSave(entityData: DeepPartial<T>): Promise<T> {
+    const entity = this.repository.create(entityData);
+    return await this.repository.save(entity);
   }
 
   async save(entity: DeepPartial<T>): Promise<T> {
