@@ -37,11 +37,14 @@ export class Device extends AbstractEntity<Device> {
   @Column({ type: 'varchar', length: 255, nullable: true })
   certificate: string;
 
+  @Column({ type: 'int', nullable: true })
+  notifcation_time: number;
+
   // ----------------- order ----------------------
   @Column({ type: 'varchar', length: 100, nullable: true })
   type: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'int', nullable: true })
   period: number;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
