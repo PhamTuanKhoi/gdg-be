@@ -168,23 +168,22 @@ export class DevicesService {
       certificate?: Express.Multer.File[];
     },
   ) {
+
+    
     const device = await this.devicesRepository.findById(id);
     if (!device) {
       throw new NotFoundException(`Device with id ${id} not found`);
     }
-
+    
     const [existingCode] = await Promise.all([
       updateDeviceDto.code
-        ? this.devicesRepository.findOneByField('code', updateDeviceDto.code)
-        : null,
+      ? this.devicesRepository.findOneByField('code', updateDeviceDto.code)
+      : null,
     ]);
-
+    
     if (existingCode && existingCode.id !== +id)
-      throw new ConflictException('Code đã tồn tại.');
-
-    // Update device information from DTO
-    Object.assign(device, updateDeviceDto);
-
+    throw new ConflictException('Code đã tồn tại.');
+  
     if (files?.files?.length > 0) {
       for (const file of files.files) {
         await this.devicesRepository.saveMedia({
@@ -193,12 +192,12 @@ export class DevicesService {
         });
       }
     }
-
+    
     if (files.certificate && files.certificate.length > 0) {
       device.certificate = `/upload/device/${device.id}/${files.certificate[0].filename}`; // chỉ 1 file certificate
     }
-
-    return await this.devicesRepository.save(device);
+  
+    return await this.devicesRepository.update(id, device);
   }
 
   async removeMedia(id: number): Promise<DeviceMedia> {
