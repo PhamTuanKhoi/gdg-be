@@ -1,4 +1,4 @@
-import { Repository, FindOptionsWhere, DeepPartial } from 'typeorm';
+import { Repository, FindOptionsWhere, DeepPartial, Not, IsNull, DeleteResult } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 export abstract class BaseRepository<T> {
@@ -35,5 +35,9 @@ export abstract class BaseRepository<T> {
   async delete(id: number): Promise<boolean> {
     const result = await this.repository.delete(id);
     return result.affected > 0;
+  } 
+
+  async softDelete(id: number): Promise<DeleteResult> {
+    return await this.repository.softDelete(id);
   }
 }
