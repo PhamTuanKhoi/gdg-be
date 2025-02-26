@@ -1,5 +1,5 @@
 import { AbstractEntity } from 'src/database/abstract.entity';
-import { Entity, Column } from 'typeorm'; 
+import { Entity, Column, DeleteDateColumn } from 'typeorm'; 
 import { UserRoleEnum } from '../enums/user.role.enum';
 
 @Entity('user')
@@ -22,9 +22,13 @@ export class User extends AbstractEntity<User> {
     @Column({ type: 'varchar', length: 255, nullable: false })
     password: string;
 
-    @Column({ type: 'varchar', length: 50, default: UserRoleEnum.USER })
-    role: string;
+    @Column({ type: 'int', length: 50, default: UserRoleEnum.USER })
+    role: number;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     position: string; // Có thể null
+
+    // ----------------- short delete ------------------
+    @DeleteDateColumn()
+    deletedAt?: Date;
 }

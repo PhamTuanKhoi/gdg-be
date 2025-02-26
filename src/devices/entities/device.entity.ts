@@ -1,6 +1,6 @@
 import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 import { AbstractEntity } from '../../../src/database/abstract.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, OneToMany } from 'typeorm';
 
 @Entity()
 export class Device extends AbstractEntity<Device> {
@@ -55,4 +55,8 @@ export class Device extends AbstractEntity<Device> {
     cascade: true,
   })
   medias: DeviceMedia[];
+
+  // ----------------- short delete ------------------
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
