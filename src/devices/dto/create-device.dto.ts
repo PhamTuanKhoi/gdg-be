@@ -114,6 +114,7 @@ export class CreateDeviceDto {
     type: 'number',
     example: 12,
     description: 'Notification Time (ngày thông báo hiệu chuẩn)',
+    required: false
   })
   @IsOptional()
   @Type(() => Number)

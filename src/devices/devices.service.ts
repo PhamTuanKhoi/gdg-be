@@ -22,6 +22,12 @@ export class DevicesService {
       certificate?: Express.Multer.File[];
     },
   ): Promise<Device> {
+
+    createDeviceDto = Object.fromEntries(
+      Object.entries(createDeviceDto).filter(
+        ([_, value]) => value !== null && value !== undefined && value !== ''
+      )
+    ) as CreateDeviceDto;
     
     const existingCode = await this.devicesRepository.findOneByField(
       'code',
@@ -170,7 +176,6 @@ export class DevicesService {
     },
   ) {
 
-    
     const device = await this.devicesRepository.findById(id);
     if (!device) {
       throw new NotFoundException(`Device with id ${id} not found`);
@@ -184,20 +189,26 @@ export class DevicesService {
     
     if (existingCode && existingCode.id !== +id)
     throw new ConflictException('Code đã tồn tại.');
+
   
-    if (files?.files?.length > 0) {
-      for (const file of files.files) {
-        await this.devicesRepository.saveMedia({
-          media: `/upload/device/${device.id}/${file.filename}`,
-          device: device,
-        });
-      }
+  if (files?.files?.length > 0) {
+    for (const file of files.files) {
+      await this.devicesRepository.saveMedia({
+        media: `/upload/device/${device.id}/${file.filename}`,
+        device: device,
+      });
     }
-    
-    if (files.certificate && files.certificate.length > 0) {
-      device.certificate = `/upload/device/${device.id}/${files.certificate[0].filename}`; // chỉ 1 file certificate
-    }
+  }
   
+  
+  if (files.certificate && files.certificate.length > 0) {
+    device.certificate = `/upload/device/${device.id}/${files.certificate[0].filename}`;  
+  }
+
+    // Update device information from DTO
+    delete updateDeviceDto?.files
+    Object.assign(device, updateDeviceDto);   
+
     return await this.devicesRepository.update(id, device);
   }
 
