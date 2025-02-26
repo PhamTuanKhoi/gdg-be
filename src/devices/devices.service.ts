@@ -22,6 +22,7 @@ export class DevicesService {
       certificate?: Express.Multer.File[];
     },
   ): Promise<Device> {
+    
     const existingCode = await this.devicesRepository.findOneByField(
       'code',
       createDeviceDto.code,

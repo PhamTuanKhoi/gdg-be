@@ -31,7 +31,7 @@ export class CreateUserDto {
     })
     @Type(() => Number)
     @IsEnum(UserRoleEnum)
-    role: string;
+    role: number;
 
     @ApiProperty({ example: 'strongpassword123' })
     @IsString()

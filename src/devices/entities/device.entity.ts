@@ -25,8 +25,8 @@ export class Device extends AbstractEntity<Device> {
   @Column({ type: 'varchar', length: 255, nullable: true })
   place: string;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  location: string;
+  @Column({ type: 'int', nullable: true })
+  location: number;
 
   @Column({ type: 'date', nullable: true })
   last: Date;
@@ -41,14 +41,14 @@ export class Device extends AbstractEntity<Device> {
   notifcation_time: number;
 
   // ----------------- order ----------------------
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  type: string;
+  @Column({ type: 'int', nullable: true })
+  type: number;
 
   @Column({ type: 'int', nullable: true })
   period: number;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  status: string;
+  @Column({ type: 'int', nullable: true })
+  status: number;
 
   // ----------------- relation --------------------
   @OneToMany(() => DeviceMedia, (deviceMedia) => deviceMedia.device, {

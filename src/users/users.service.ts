@@ -126,7 +126,7 @@ export class UsersService implements OnApplicationBootstrap {
         username: 'admin',
         email: 'admin@example.com',
         password: passwordHash,
-        role: UserRoleEnum.SUPERADMIN.toString(),
+        role: UserRoleEnum.SUPERADMIN,
         phone: '0393877678',
       });
       console.log('✅ Superuser created!');
