@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, In, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, In, Not, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserQueryDto } from './dto/query-user.dto';
 import { BaseRepository } from 'src/database/abstract.repository';
@@ -37,6 +37,7 @@ export class UserRepository extends BaseRepository<User> {
         { email: ILike(`%${query}%`) },
         { phone: ILike(`%${query}%`) },
         { position: ILike(`%${query}%`) },
+        { role: Not(3) }
       );
     }
 
