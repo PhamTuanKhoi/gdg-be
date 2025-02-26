@@ -22,8 +22,8 @@ export class User extends AbstractEntity<User> {
     @Column({ type: 'varchar', length: 255, nullable: false })
     password: string;
 
-    @Column({ type: 'int', length: 50, default: UserRoleEnum.USER })
-    role: number;
+    @Column({ type: 'varchar', length: 50, default: UserRoleEnum.USER })
+    role: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     position: string; // Có thể null
