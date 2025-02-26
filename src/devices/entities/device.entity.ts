@@ -38,7 +38,7 @@ export class Device extends AbstractEntity<Device> {
   certificate: string;
 
   @Column({ type: 'int', nullable: true })
-  notifcation_time: number;
+  notification_time: number;
 
   // ----------------- order ----------------------
   @Column({ type: 'int', nullable: true })
