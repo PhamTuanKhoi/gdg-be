@@ -113,12 +113,12 @@ export class CreateDeviceDto {
   @ApiProperty({
     type: 'number',
     example: 12,
-    description: 'Notifcation Time (ngày thông báo hiệu chuẩn)',
+    description: 'Notification Time (ngày thông báo hiệu chuẩn)',
   })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  notifcation_time?: number;
+  notification_time?: number;
 
   @ApiProperty({
     enum: DeviceStatusEnum,
