@@ -1,6 +1,10 @@
-import { Column } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { DeviceInOut } from './device-in-out.entity';
+import { User } from 'src/users/entities/user.entity';
+import { AbstractEntity } from 'src/database/abstract.entity';
 
-export class InforMovement {
+@Entity('infor_movement')
+export class InforMovement extends AbstractEntity<InforMovement> {
   @Column({ type: 'varchar', length: 255, nullable: false })
   ownerName: string;
 
@@ -29,17 +33,27 @@ export class InforMovement {
   total: number;
 
   @Column({ type: 'varchar', length: 255 })
-  removingTech: string;
-
-  @Column({ type: 'varchar', length: 255 })
   qcVerifyingRemoving: string;
-
-  @Column({ type: 'varchar', length: 255 })
-  returningTech: string;
 
   @Column({ type: 'varchar', length: 255 })
   qcVerifyingReturning: string;
 
   @Column({ type: 'text', nullable: true })
   notes: string;
+
+  // ----------------- relation --------------------
+  @OneToMany(() => DeviceInOut, (deviceInOut) => deviceInOut.inforMovement, {
+    cascade: true,
+  })
+  deviceInOuts: DeviceInOut[];
+
+  @ManyToOne(() => User, (user) => user.inforRemovings, {
+    nullable: false,
+  })
+  removingTech: User;
+
+  @ManyToOne(() => User, (user) => user.inforReturnings, {
+    nullable: true,
+  })
+  returningTech: User;
 }
