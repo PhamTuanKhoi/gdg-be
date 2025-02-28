@@ -234,6 +234,10 @@ export class DevicesService {
     delete updateDeviceDto?.files;
     Object.assign(device, updateDeviceDto);
 
+    if (!updateDeviceDto.maintenanceDate) {
+      device.maintenanceDate = null;
+    }
+
     return await this.devicesRepository.update(id, device);
   }
 
