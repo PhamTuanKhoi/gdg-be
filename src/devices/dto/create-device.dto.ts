@@ -95,8 +95,7 @@ export class CreateDeviceDto {
     description: 'maintenance date',
   })
   @IsOptional()
-  @IsDateString()
-  maintenanceDate?: Date;
+  maintenanceDate?: Date | null;
 
   @ApiProperty({
     enum: DeviceTypeEnum,
