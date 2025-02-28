@@ -40,6 +40,9 @@ export class Device extends AbstractEntity<Device> {
   @Column({ type: 'int', nullable: true })
   notification_time: number;
 
+  @Column({ type: 'date', nullable: true })
+  maintenanceDate: Date;
+
   // ----------------- order ----------------------
   @Column({ type: 'int', nullable: true })
   type: number;
