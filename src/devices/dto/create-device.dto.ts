@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDateString, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { DeviceStatusEnum } from '../enums/device.status.enum';
 import { DeviceLocationEnum } from '../enums/device.location.enum';
 import { DeviceTypeEnum } from '../enums/device.type.enum';
@@ -57,8 +64,8 @@ export class CreateDeviceDto {
     description: 'Location of the device (0, 1, 2)',
   })
   @IsOptional()
-  @Type(() => Number) 
-  @IsEnum(DeviceLocationEnum) 
+  @Type(() => Number)
+  @IsEnum(DeviceLocationEnum)
   location?: DeviceLocationEnum;
 
   @ApiProperty({
@@ -82,13 +89,23 @@ export class CreateDeviceDto {
   next?: Date;
 
   @ApiProperty({
+    type: 'string',
+    format: 'date',
+    example: '2025-12-31',
+    description: 'maintenance date',
+  })
+  @IsOptional()
+  @IsDateString()
+  maintenanceDate?: Date;
+
+  @ApiProperty({
     enum: DeviceTypeEnum,
     example: DeviceTypeEnum.ELECTRONICS,
     description: 'Type of the device (0, 1, 2, 3, 4)',
   })
   @IsOptional()
-  @Type(() => Number) 
-  @IsEnum(DeviceTypeEnum) 
+  @Type(() => Number)
+  @IsEnum(DeviceTypeEnum)
   type?: DeviceTypeEnum;
 
   @ApiProperty({
@@ -114,7 +131,7 @@ export class CreateDeviceDto {
     type: 'number',
     example: 12,
     description: 'Notification Time (ngày thông báo hiệu chuẩn)',
-    required: false
+    required: false,
   })
   @IsOptional()
   @Type(() => Number)
@@ -127,8 +144,8 @@ export class CreateDeviceDto {
     description: 'Status of the device (0: ON_SITE, 1: AT_LAB)',
   })
   @IsOptional()
-  @Type(() => Number) 
-  @IsEnum(DeviceStatusEnum) 
+  @Type(() => Number)
+  @IsEnum(DeviceStatusEnum)
   status?: DeviceStatusEnum;
 
   @ApiProperty({
