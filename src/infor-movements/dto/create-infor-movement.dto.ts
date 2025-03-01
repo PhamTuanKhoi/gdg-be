@@ -85,14 +85,4 @@ export class CreateInforMovementDto {
   @ApiProperty({ example: 100, description: 'removingTech id' })
   @IsInt()
   removingTech_id: number;
-
-  @ApiProperty({
-    example: [1, 2, 3],
-    description: 'Danh sách ID của thiết bị',
-    type: [Number],
-  })
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsInt({ each: true }) // Kiểm tra từng phần tử trong mảng là số nguyên
-  device_ids: number[];
 }

@@ -63,7 +63,12 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
   async findRelationById(id: number): Promise<InforMovement> {
     return await this.inforMovementRepository.findOne({
       where: { id },
-      relations: ['deviceInOuts', 'deviceInOuts.device'],
+      relations: [
+        'deviceInOuts',
+        'deviceInOuts.device',
+        'removingTech',
+        'returningTech',
+      ],
     });
   }
 

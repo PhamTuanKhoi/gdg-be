@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateInforMovementDto } from './dto/create-infor-movement.dto';
 import { UpdateInforMovementDto } from './dto/update-infor-movement.dto';
 import { InforMovementsRepository } from './infor-movements.repository';
@@ -21,32 +25,10 @@ export class InforMovementsService {
       throw new NotFoundException('User không tồn tại.');
     }
 
-    const devices = await this.inforMovementsRepository.findDeviceByIds(
-      createInforMovementDto.device_ids,
-    );
-
-    if (devices.length !== createInforMovementDto.device_ids.length) {
-      throw new NotFoundException('One or more devices not found');
-    }
-
     const inforMovement = await this.inforMovementsRepository.save({
       ...createInforMovementDto,
       removingTech: user,
     });
-
-    const deviceInOuts: DeviceInOut[] = await Promise.all(
-      devices.map(async (device) => {
-        return this.inforMovementsRepository.createDeviceInOut({
-          dateIn: null,
-          dateOut: createInforMovementDto.date,
-          inforMovement: inforMovement,
-          device: device,
-        } as DeviceInOut);
-      }),
-    );
-
-    // 4. Lưu DeviceInOut vào database
-    await this.inforMovementsRepository.saveDeviceInOuts(deviceInOuts);
 
     return inforMovement;
   }
@@ -68,45 +50,90 @@ export class InforMovementsService {
     {
       returningTech_id,
       deviceInOut_ids,
+      device_ids,
       ...validFields
     }: UpdateInforMovementDto,
   ) {
     // ------------------------ validate -----------------------
-    const user = await this.existUser(returningTech_id);
 
     const inforMovement = await this.findOne(id);
+    Object.assign(inforMovement, validFields);
+
     if (!inforMovement || inforMovement == null) {
       throw new NotFoundException('InforMovement không tồn tại.');
     }
 
-    if (deviceInOut_ids.length > 0) {
-      const deviceInOuts: DeviceInOut[] =
-        await this.inforMovementsRepository.findDeviceInOutByIds(
-          deviceInOut_ids,
-        );
+    if (deviceInOut_ids && deviceInOut_ids.length > 0) {
+      await this.updateDeviceOut(deviceInOut_ids);
 
-      if (deviceInOuts.length !== deviceInOut_ids.length) {
-        throw new NotFoundException('One or more deviceInOuts not found');
+      const user = await this.existUser(returningTech_id);
+      return await this.inforMovementsRepository.update(id, {
+        ...inforMovement,
+        returningTech: user,
+      });
+    } else {
+      if (device_ids && device_ids.length > 0) {
+        await this.saveDeviceIn(device_ids, validFields.date, inforMovement);
+      }
+    }
+
+    return await this.inforMovementsRepository.update(id, inforMovement);
+  }
+
+  async saveDeviceIn(device_ids, date, inforMovement): Promise<void> {
+    try {
+      const devices =
+        await this.inforMovementsRepository.findDeviceByIds(device_ids);
+
+      if (devices.length !== device_ids.length) {
+        throw new NotFoundException('One or more devices not found');
       }
 
-      const createDeviceInOuts: DeviceInOut[] = await Promise.all(
-        deviceInOuts.map(async (deviceInOut) => {
+      const deviceInOuts: DeviceInOut[] = await Promise.all(
+        devices.map(async (device) => {
           return this.inforMovementsRepository.createDeviceInOut({
-            ...deviceInOut,
-            dateIn: new Date(),
+            dateIn: null,
+            dateOut: date,
+            inforMovement: inforMovement,
+            device: device,
           } as DeviceInOut);
         }),
       );
-
-      await this.inforMovementsRepository.saveDeviceInOuts(createDeviceInOuts);
+      // 4. Lưu DeviceInOut vào database
+      await this.inforMovementsRepository.saveDeviceInOuts(deviceInOuts);
+    } catch (error) {
+      throw new BadRequestException(error);
     }
+  }
 
-    Object.assign(inforMovement, validFields);
+  async updateDeviceOut(deviceInOut_ids): Promise<void> {
+    try {
+      if (deviceInOut_ids && deviceInOut_ids.length > 0) {
+        const deviceInOuts: DeviceInOut[] =
+          await this.inforMovementsRepository.findDeviceInOutByIds(
+            deviceInOut_ids,
+          );
 
-    return await this.inforMovementsRepository.update(id, {
-      ...inforMovement,
-      returningTech: user,
-    });
+        if (deviceInOuts.length !== deviceInOut_ids.length) {
+          throw new NotFoundException('One or more deviceInOuts not found');
+        }
+
+        const createDeviceInOuts: DeviceInOut[] = await Promise.all(
+          deviceInOuts.map(async (deviceInOut) => {
+            return this.inforMovementsRepository.createDeviceInOut({
+              ...deviceInOut,
+              dateIn: new Date(),
+            } as DeviceInOut);
+          }),
+        );
+
+        await this.inforMovementsRepository.saveDeviceInOuts(
+          createDeviceInOuts,
+        );
+      }
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   remove(id: number) {
