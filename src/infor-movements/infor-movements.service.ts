@@ -54,8 +54,12 @@ export class InforMovementsService {
     return await this.inforMovementsRepository.findAll(inforMovementQueryDto);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} inforMovement`;
+  async findRelationById(id: number) {
+    return await this.inforMovementsRepository.findRelationById(id);
+  }
+
+  async findOne(id: number) {
+    return await this.inforMovementsRepository.findById(id);
   }
 
   update(id: number, updateInforMovementDto: UpdateInforMovementDto) {

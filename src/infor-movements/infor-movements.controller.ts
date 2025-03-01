@@ -37,6 +37,12 @@ export class InforMovementsController {
     return this.inforMovementsService.findAll(queryDto);
   }
 
+  @Get('relation/:id')
+  @ApiOperation({ summary: 'Get infor-movements by id' })
+  async findRelationById(@Param('id') id: string) {
+    return this.inforMovementsService.findRelationById(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.inforMovementsService.findOne(+id);

@@ -60,6 +60,13 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
   }
 
+  async findRelationById(id: number): Promise<InforMovement> {
+    return await this.inforMovementRepository.findOne({
+      where: { id },
+      relations: ['deviceInOuts', 'deviceInOuts.device'],
+    });
+  }
+
   async findUserById(id: number): Promise<User> {
     return await this.userRepository.findOne({ where: { id } });
   }
