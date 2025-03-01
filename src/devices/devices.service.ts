@@ -191,6 +191,10 @@ export class DevicesService {
     return await this.devicesRepository.findAll(queryDto);
   }
 
+  async findByCode(code: string): Promise<Device> {
+    return await this.devicesRepository.findOneByField('code', code);
+  }
+
   async findOne(id: number) {
     return await this.devicesRepository.findByIdRelation(id);
   }

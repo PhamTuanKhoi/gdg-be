@@ -103,6 +103,11 @@ export class DevicesController {
     return this.devicesService.findAll(queryDto);
   }
 
+  @Get('code/:code')
+  findByCode(@Param('code') code: string) {
+    return this.devicesService.findByCode(code);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.devicesService.findOne(+id);
