@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInforMovementDto } from './dto/create-infor-movement.dto';
 import { UpdateInforMovementDto } from './dto/update-infor-movement.dto';
 import { InforMovementsRepository } from './infor-movements.repository';
+import { DeviceInOut } from './entities/device-in-out.entity';
 
 @Injectable()
 export class InforMovementsService {
@@ -18,10 +19,34 @@ export class InforMovementsService {
       throw new NotFoundException('User không tồn tại.');
     }
 
-    return await this.inforMovementsRepository.save({
+    const devices = await this.inforMovementsRepository.findDeviceByIds(
+      createInforMovementDto.device_ids,
+    );
+
+    if (devices.length !== createInforMovementDto.device_ids.length) {
+      throw new NotFoundException('One or more devices not found');
+    }
+
+    const inforMovement = await this.inforMovementsRepository.save({
       ...createInforMovementDto,
       removingTech: user,
     });
+
+    const deviceInOuts: DeviceInOut[] = await Promise.all(
+      devices.map(async (device) => {
+        return this.inforMovementsRepository.createDeviceInOut({
+          dateIn: createInforMovementDto.date,
+          dateOut: createInforMovementDto.toDate,
+          inforMovement: inforMovement,
+          device: device,
+        } as DeviceInOut);
+      }),
+    );
+
+    // 4. Lưu DeviceInOut vào database
+    await this.inforMovementsRepository.saveDeviceInOuts(deviceInOuts);
+
+    return inforMovement;
   }
 
   findAll() {
