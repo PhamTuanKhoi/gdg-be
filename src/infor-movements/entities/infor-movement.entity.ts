@@ -11,19 +11,19 @@ export class InforMovement extends AbstractEntity<InforMovement> {
   @Column({ type: 'text', nullable: true })
   address: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   technician: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   date: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   toDate: Date;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: false })
   location: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   toLocation: string;
 
   @Column({ type: 'text', nullable: true })
@@ -35,7 +35,7 @@ export class InforMovement extends AbstractEntity<InforMovement> {
   @Column({ type: 'varchar', length: 255 })
   qcVerifyingRemoving: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   qcVerifyingReturning: string;
 
   @Column({ type: 'text', nullable: true })

@@ -1,11 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInforMovementDto } from './dto/create-infor-movement.dto';
 import { UpdateInforMovementDto } from './dto/update-infor-movement.dto';
+import { InforMovementsRepository } from './infor-movements.repository';
 
 @Injectable()
 export class InforMovementsService {
-  create(createInforMovementDto: CreateInforMovementDto) {
-    return 'This action adds a new inforMovement';
+  constructor(
+    private readonly inforMovementsRepository: InforMovementsRepository,
+  ) {}
+
+  async create(createInforMovementDto: CreateInforMovementDto) {
+    const user = await this.inforMovementsRepository.findUserById(
+      createInforMovementDto.removingTech_id,
+    );
+
+    if (!user || user == null || !createInforMovementDto.removingTech_id) {
+      throw new NotFoundException('User không tồn tại.');
+    }
+
+    return await this.inforMovementsRepository.save({
+      ...createInforMovementDto,
+      removingTech: user,
+    });
   }
 
   findAll() {
