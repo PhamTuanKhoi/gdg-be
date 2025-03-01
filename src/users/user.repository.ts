@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, In, Not, Repository } from 'typeorm';
+import { And, FindOptionsWhere, ILike, In, Not, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserQueryDto } from './dto/query-user.dto';
 import { BaseRepository } from 'src/database/abstract.repository';
@@ -11,7 +11,7 @@ export class UserRepository extends BaseRepository<User> {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {
-    super(userRepository)
+    super(userRepository);
   }
 
   async findAll({
@@ -38,16 +38,18 @@ export class UserRepository extends BaseRepository<User> {
         { phone: ILike(`%${query}%`) },
         { position: ILike(`%${query}%`) },
       );
-    } 
-    
-    where.push({
-      role: Not(3)
-    })  
-    
-    if (roles && roles.length > 0) {
-      where.push({ role: In(roles) });
     }
-    
+
+    // where.push({
+    //   role: Not(3),
+    // });
+
+    if (roles && roles.length > 0) {
+      where.push({ role: And(In(roles), Not(3)) });
+    } else {
+      where.push({ role: Not(3) });
+    }
+
     // ✅ Use findAndCount to reduce query times
     const [data, total] = await this.userRepository.findAndCount({
       where: where.length ? where : undefined,
