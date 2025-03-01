@@ -36,8 +36,8 @@ export class InforMovementsService {
     const deviceInOuts: DeviceInOut[] = await Promise.all(
       devices.map(async (device) => {
         return this.inforMovementsRepository.createDeviceInOut({
-          dateIn: createInforMovementDto.date,
-          dateOut: createInforMovementDto.toDate,
+          dateIn: null,
+          dateOut: createInforMovementDto.date,
           inforMovement: inforMovement,
           device: device,
         } as DeviceInOut);

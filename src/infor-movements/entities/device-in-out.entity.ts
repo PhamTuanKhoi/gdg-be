@@ -5,7 +5,7 @@ import { AbstractEntity } from 'src/database/abstract.entity';
 
 @Entity('device_in_out')
 export class DeviceInOut extends AbstractEntity<DeviceInOut> {
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   dateIn: Date;
 
   @Column({ type: 'timestamp' })
