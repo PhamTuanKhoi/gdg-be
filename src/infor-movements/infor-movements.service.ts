@@ -3,6 +3,7 @@ import { CreateInforMovementDto } from './dto/create-infor-movement.dto';
 import { UpdateInforMovementDto } from './dto/update-infor-movement.dto';
 import { InforMovementsRepository } from './infor-movements.repository';
 import { DeviceInOut } from './entities/device-in-out.entity';
+import { InforMovementQueryDto } from './dto/query-infor-movements.dto';
 
 @Injectable()
 export class InforMovementsService {
@@ -49,8 +50,8 @@ export class InforMovementsService {
     return inforMovement;
   }
 
-  findAll() {
-    return `This action returns all inforMovements`;
+  async findAll(inforMovementQueryDto: InforMovementQueryDto) {
+    return await this.inforMovementsRepository.findAll(inforMovementQueryDto);
   }
 
   findOne(id: number) {

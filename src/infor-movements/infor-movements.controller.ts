@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { InforMovementsService } from './infor-movements.service';
 import { CreateInforMovementDto } from './dto/create-infor-movement.dto';
 import { UpdateInforMovementDto } from './dto/update-infor-movement.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { InforMovementQueryDto } from './dto/query-infor-movements.dto';
 
 @ApiTags('Infor Movement')
 @Controller('infor-movements')
@@ -24,8 +26,15 @@ export class InforMovementsController {
   }
 
   @Get()
-  findAll() {
-    return this.inforMovementsService.findAll();
+  @ApiOperation({
+    summary: 'Lấy danh sách Infor Movement có phân trang, tìm kiếm và sắp xếp',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Danh sách InforMovement được trả về.',
+  })
+  async findAll(@Query() queryDto: InforMovementQueryDto) {
+    return this.inforMovementsService.findAll(queryDto);
   }
 
   @Get(':id')
