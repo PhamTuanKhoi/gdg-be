@@ -71,8 +71,16 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
     return await this.userRepository.findOne({ where: { id } });
   }
 
-  async findDeviceByIds(ids: number[]) {
+  async findDeviceByIds(ids: number[]): Promise<Device[]> {
     return await this.deviceRepository.find({
+      where: {
+        id: In(ids),
+      },
+    });
+  }
+
+  async findDeviceInOutByIds(ids: number[]): Promise<DeviceInOut[]> {
+    return await this.deviceInOutRepository.find({
       where: {
         id: In(ids),
       },

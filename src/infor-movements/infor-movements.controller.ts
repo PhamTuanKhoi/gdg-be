@@ -49,7 +49,8 @@ export class InforMovementsController {
   }
 
   @Patch(':id')
-  update(
+  @ApiOperation({ summary: 'cập nhật thông tin di chuyển' })
+  async update(
     @Param('id') id: string,
     @Body() updateInforMovementDto: UpdateInforMovementDto,
   ) {

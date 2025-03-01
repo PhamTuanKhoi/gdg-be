@@ -73,13 +73,6 @@ export class CreateInforMovementDto {
   @IsString()
   qcVerifyingRemoving: string;
 
-  //   @ApiProperty({
-  //     example: 'QC Name',
-  //     description: 'QC xác nhận khi trả thiết bị',
-  //   })
-  //   @IsString()
-  //   qcVerifyingReturning: string;
-
   @ApiProperty({
     example: 'Some notes',
     description: 'Ghi chú',
