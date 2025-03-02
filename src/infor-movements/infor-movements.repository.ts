@@ -49,13 +49,25 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
       );
     }
 
-    // ✅ Use findAndCount to reduce query times
-    const [data, total] = await this.inforMovementRepository.findAndCount({
-      where: where.length ? where : undefined,
-      order: key ? { [key]: order.toUpperCase() as 'ASC' | 'DESC' } : undefined,
-      skip: (pageIndex - 1) * pageSize,
-      take: pageSize,
-    });
+    const [data, total] = await this.inforMovementRepository
+      .createQueryBuilder('inforMovement')
+      .leftJoinAndSelect('inforMovement.removingTech', 'removingTech')
+      .leftJoinAndSelect('inforMovement.returningTech', 'returningTech')
+      .select([
+        'inforMovement', // Chọn tất cả cột của inforMovement
+        'removingTech.id', // Chỉ lấy ID và name của removingTech
+        'removingTech.name',
+        'returningTech.id',
+        'returningTech.name',
+      ])
+      .skip((pageIndex - 1) * pageSize)
+      .take(pageSize)
+      .orderBy(
+        key
+          ? { [`inforMovement.${key}`]: order.toUpperCase() as 'ASC' | 'DESC' }
+          : undefined,
+      )
+      .getManyAndCount();
 
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
   }
