@@ -117,6 +117,15 @@ export class CreateDeviceDto {
   place?: string;
 
   @ApiProperty({
+    type: 'string',
+    example: 'description company ABC',
+    description: 'Device description',
+  })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiProperty({
     type: 'number',
     example: 12,
     description: 'Period (số tháng hoặc năm tùy theo context)',

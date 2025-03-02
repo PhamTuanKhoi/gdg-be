@@ -44,6 +44,9 @@ export class Device extends AbstractEntity<Device> {
   @Column({ type: 'date', nullable: true })
   maintenanceDate: Date;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  description: string;
+
   // ----------------- order ----------------------
   @Column({ type: 'int', nullable: true })
   type: number;
