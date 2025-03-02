@@ -108,6 +108,11 @@ export class DevicesController {
     return this.devicesService.findByCode(code);
   }
 
+  @Get('history/:id')
+  findByHistory(@Param('id') id: string) {
+    return this.devicesService.findByHistory(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.devicesService.findOne(+id);

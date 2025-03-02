@@ -62,6 +62,13 @@ export class DevicesRepository extends BaseRepository<Device> {
     });
   }
 
+  async findByHistory(id: number): Promise<Device> {
+    return this.deviceRepository.findOne({
+      where: { id },
+      relations: ['deviceInOuts', 'deviceInOuts.inforMovement'],
+    });
+  }
+
   async saveMedia(media: Partial<DeviceMedia>): Promise<DeviceMedia> {
     return await this.mediaRepository.save(media);
   }

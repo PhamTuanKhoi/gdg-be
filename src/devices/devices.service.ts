@@ -195,6 +195,10 @@ export class DevicesService {
     return await this.devicesRepository.findOneByField('code', code);
   }
 
+  async findByHistory(id: number) {
+    return await this.devicesRepository.findByHistory(id);
+  }
+
   async findOne(id: number) {
     return await this.devicesRepository.findByIdRelation(id);
   }
