@@ -65,7 +65,12 @@ export class DevicesRepository extends BaseRepository<Device> {
   async findByHistory(id: number): Promise<Device> {
     return this.deviceRepository.findOne({
       where: { id },
-      relations: ['deviceInOuts', 'deviceInOuts.inforMovement'],
+      relations: [
+        'deviceInOuts',
+        'deviceInOuts.inforMovement',
+        'deviceInOuts.inforMovement.removingTech',
+        'deviceInOuts.inforMovement.returningTech',
+      ],
     });
   }
 
