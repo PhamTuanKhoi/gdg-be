@@ -9,6 +9,7 @@ import { InforMovementsRepository } from './infor-movements.repository';
 import { DeviceInOut } from './entities/device-in-out.entity';
 import { InforMovementQueryDto } from './dto/query-infor-movements.dto';
 import { User } from 'src/users/entities/user.entity';
+import { InforMovement } from './entities/infor-movement.entity';
 
 @Injectable()
 export class InforMovementsService {
@@ -63,6 +64,7 @@ export class InforMovementsService {
       throw new NotFoundException('InforMovement không tồn tại.');
     }
 
+    // ----------------------------- in -------------------------------
     if (deviceInOut_ids && deviceInOut_ids.length > 0) {
       await this.updateDeviceOut(deviceInOut_ids);
 
@@ -71,7 +73,9 @@ export class InforMovementsService {
         ...inforMovement,
         returningTech: user,
       });
-    } else {
+    }
+    // ----------------------------- out -------------------------------
+    else {
       if (device_ids && device_ids.length > 0) {
         await this.saveDeviceIn(device_ids, validFields.date, inforMovement);
       }
@@ -80,7 +84,11 @@ export class InforMovementsService {
     return await this.inforMovementsRepository.update(id, inforMovement);
   }
 
-  async saveDeviceIn(device_ids, date, inforMovement): Promise<void> {
+  async saveDeviceIn(
+    device_ids: number[],
+    date: Date,
+    inforMovement: InforMovement,
+  ): Promise<void> {
     try {
       const devices =
         await this.inforMovementsRepository.findDeviceByIds(device_ids);
@@ -89,18 +97,32 @@ export class InforMovementsService {
         throw new NotFoundException('One or more devices not found');
       }
 
-      const deviceInOuts: DeviceInOut[] = await Promise.all(
-        devices.map(async (device) => {
-          return this.inforMovementsRepository.createDeviceInOut({
+      // 🔥 Lấy danh sách DeviceInOut đã tồn tại
+      const existingRecords =
+        await this.inforMovementsRepository.findDeviceInOutByMovementAndDevices(
+          inforMovement.id,
+          device_ids,
+        );
+
+      const existingDeviceIds = new Set(
+        existingRecords.map((record) => record.device.id),
+      );
+
+      // 🔥 Chỉ tạo mới nếu chưa có
+      const deviceInOuts = devices
+        .filter((device) => !existingDeviceIds.has(device.id))
+        .map((device) =>
+          this.inforMovementsRepository.createDeviceInOut({
             dateIn: null,
             dateOut: date,
-            inforMovement: inforMovement,
-            device: device,
-          } as DeviceInOut);
-        }),
-      );
-      // 4. Lưu DeviceInOut vào database
-      await this.inforMovementsRepository.saveDeviceInOuts(deviceInOuts);
+            inforMovement,
+            device,
+          }),
+        );
+
+      if (deviceInOuts.length > 0) {
+        await this.inforMovementsRepository.saveDeviceInOuts(deviceInOuts);
+      }
     } catch (error) {
       throw new BadRequestException(error);
     }

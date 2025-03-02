@@ -125,8 +125,21 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
     });
   }
 
-  async createDeviceInOut(DeviceInOut: DeviceInOut): Promise<DeviceInOut> {
-    return this.deviceInOutRepository.create(DeviceInOut);
+  async findDeviceInOutByMovementAndDevices(
+    inforMovementId: number,
+    deviceIds: number[],
+  ): Promise<DeviceInOut[]> {
+    return await this.deviceInOutRepository.find({
+      where: {
+        inforMovement: { id: inforMovementId },
+        device: In(deviceIds),
+      },
+      relations: ['device'], // Đảm bảo lấy cả device.id để xử lý Set
+    });
+  }
+
+  createDeviceInOut(data: Partial<DeviceInOut>): DeviceInOut {
+    return this.deviceInOutRepository.create(data);
   }
 
   async saveDeviceInOuts(entity: DeviceInOut[]): Promise<DeviceInOut[]> {
