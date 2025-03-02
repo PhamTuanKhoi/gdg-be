@@ -35,39 +35,60 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
     pageSize: number;
     data: InforMovement[];
   }> {
-    const where: FindOptionsWhere<InforMovement>[] = [];
-
-    // ✅ Apply full-text search on all columns
-    if (query) {
-      where.push(
-        { ownerName: ILike(`%${query}%`) },
-        { address: ILike(`%${query}%`) },
-        { technician: ILike(`%${query}%`) },
-        { location: ILike(`%${query}%`) },
-        { toLocation: ILike(`%${query}%`) },
-        { signature: ILike(`%${query}%`) },
-      );
-    }
-
-    const [data, total] = await this.inforMovementRepository
+    const queryBuilder = this.inforMovementRepository
       .createQueryBuilder('inforMovement')
       .leftJoinAndSelect('inforMovement.removingTech', 'removingTech')
       .leftJoinAndSelect('inforMovement.returningTech', 'returningTech')
+      .leftJoin('inforMovement.deviceInOuts', 'deviceInOut')
       .select([
-        'inforMovement', // Chọn tất cả cột của inforMovement
-        'removingTech.id', // Chỉ lấy ID và name của removingTech
-        'removingTech.name',
-        'returningTech.id',
-        'returningTech.name',
+        'inforMovement.id AS id',
+        'inforMovement.createdAt as createdAt',
+        'inforMovement.updatedAt as updatedAt',
+        'inforMovement.ownerName as ownerName',
+        'inforMovement.address as address',
+        'inforMovement.technician as technician',
+        'inforMovement.date as date',
+        'inforMovement.toDate as toDate',
+        'inforMovement.location as location',
+        'inforMovement.toLocation as toLocation',
+        'inforMovement.signature as signature',
+        'inforMovement.total as total',
+        'inforMovement.qcVerifyingRemoving as qcVerifyingRemoving',
+        'inforMovement.qcVerifyingReturning as qcVerifyingReturning',
+        'inforMovement.notes as notes',
+        "JSON_OBJECT('id', removingTech.id, 'name', removingTech.name) AS removingTech",
+        "JSON_OBJECT('id', returningTech.id, 'name', returningTech.name) AS returningTech",
+        'SUM(CASE WHEN deviceInOut.dateIn IS NOT NULL THEN 1 ELSE 0 END) AS totalReturned',
       ])
+      .groupBy('inforMovement.id, removingTech.id, returningTech.id');
+
+    // ✅ Thêm điều kiện tìm kiếm (where)
+    if (query) {
+      queryBuilder.andWhere(
+        `inforMovement.ownerName LIKE :query 
+      OR inforMovement.address LIKE :query 
+      OR inforMovement.technician LIKE :query 
+      OR inforMovement.location LIKE :query 
+      OR inforMovement.toLocation LIKE :query 
+      OR inforMovement.signature LIKE :query`,
+        { query: `%${query}%` },
+      );
+    }
+
+    // ✅ Sắp xếp
+    if (key) {
+      queryBuilder.orderBy(
+        `inforMovement.${key}`,
+        order.toUpperCase() as 'ASC' | 'DESC',
+      );
+    }
+
+    const data = await queryBuilder
       .skip((pageIndex - 1) * pageSize)
       .take(pageSize)
-      .orderBy(
-        key
-          ? { [`inforMovement.${key}`]: order.toUpperCase() as 'ASC' | 'DESC' }
-          : undefined,
-      )
-      .getManyAndCount();
+      .getRawMany();
+
+    const total = data.length; // ✅ Sửa lỗi đếm tổng số bản ghi
 
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
   }
