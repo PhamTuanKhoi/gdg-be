@@ -62,16 +62,28 @@ export class DevicesRepository extends BaseRepository<Device> {
     });
   }
 
-  async findByHistory(id: number): Promise<Device> {
-    return this.deviceRepository.findOne({
+  async findByHistory(id: number): Promise<Device & { totalReturned: number }> {
+    const device = await this.deviceRepository.findOne({
       where: { id },
       relations: [
+        'medias',
         'deviceInOuts',
         'deviceInOuts.inforMovement',
         'deviceInOuts.inforMovement.removingTech',
         'deviceInOuts.inforMovement.returningTech',
       ],
     });
+
+    if (!device) return null;
+
+    const totalDateIn1 = await this.deviceRepository
+      .createQueryBuilder('device')
+      .leftJoin('device.deviceInOuts', 'deviceInOut')
+      .where('device.id = :id', { id })
+      .andWhere('deviceInOut.dateIn IS NOT NULL')
+      .getRawMany();
+
+    return { ...device, totalReturned: totalDateIn1.length };
   }
 
   async saveMedia(media: Partial<DeviceMedia>): Promise<DeviceMedia> {
