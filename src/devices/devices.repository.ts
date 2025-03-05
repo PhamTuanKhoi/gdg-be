@@ -62,7 +62,7 @@ export class DevicesRepository extends BaseRepository<Device> {
     });
   }
 
-  async findByHistory(id: number): Promise<Device & { totalReturned: number }> {
+  async findByHistory(id: number): Promise<Device> {
     const device = await this.deviceRepository.findOne({
       where: { id },
       relations: [
@@ -76,14 +76,7 @@ export class DevicesRepository extends BaseRepository<Device> {
 
     if (!device) return null;
 
-    const totalDateIn1 = await this.deviceRepository
-      .createQueryBuilder('device')
-      .leftJoin('device.deviceInOuts', 'deviceInOut')
-      .where('device.id = :id', { id })
-      .andWhere('deviceInOut.dateIn IS NOT NULL')
-      .getRawMany();
-
-    return { ...device, totalReturned: totalDateIn1.length };
+    return device;
   }
 
   async saveMedia(media: Partial<DeviceMedia>): Promise<DeviceMedia> {
