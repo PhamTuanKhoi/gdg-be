@@ -9,6 +9,7 @@ import { DevicesModule } from './devices/devices.module';
 import { UploadModule } from './upload/upload.module';
 import { InforMovementsModule } from './infor-movements/infor-movements.module';
 import { WebsocketsModule } from './websockets/websockets.module';
+import { CalibrationModule } from './calibration/calibration.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { WebsocketsModule } from './websockets/websockets.module';
     UploadModule,
     InforMovementsModule,
     WebsocketsModule,
+    CalibrationModule,
   ],
   controllers: [],
   providers: [
