@@ -2,6 +2,7 @@ import { AbstractEntity } from 'src/database/abstract.entity';
 import { Entity, Column, DeleteDateColumn, OneToMany } from 'typeorm';
 import { UserRoleEnum } from '../enums/user.role.enum';
 import { InforMovement } from 'src/infor-movements/entities/infor-movement.entity';
+import { CalibrationUser } from 'src/calibration/entities/calibration-user.entity';
 
 @Entity('user')
 export class User extends AbstractEntity<User> {
@@ -51,4 +52,13 @@ export class User extends AbstractEntity<User> {
     },
   )
   inforReturnings: InforMovement[];
+
+  @OneToMany(
+    () => CalibrationUser,
+    (calibrationUsers) => calibrationUsers.user,
+    {
+      cascade: true,
+    },
+  )
+  calibrationUsers: CalibrationUser[];
 }

@@ -2,6 +2,7 @@ import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 import { AbstractEntity } from '../../../src/database/abstract.entity';
 import { Column, DeleteDateColumn, Entity, OneToMany } from 'typeorm';
 import { DeviceInOut } from 'src/infor-movements/entities/device-in-out.entity';
+import { Calibration } from 'src/calibration/entities/calibration.entity';
 
 @Entity()
 export class Device extends AbstractEntity<Device> {
@@ -67,6 +68,11 @@ export class Device extends AbstractEntity<Device> {
     cascade: true,
   })
   deviceInOuts: DeviceInOut[];
+
+  @OneToMany(() => Calibration, (calibration) => calibration.device, {
+    cascade: true,
+  })
+  calibrations: Calibration[];
 
   // ----------------- short delete ------------------
   @DeleteDateColumn()
