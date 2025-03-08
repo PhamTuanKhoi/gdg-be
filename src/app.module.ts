@@ -8,6 +8,7 @@ import { RolesGuard } from './auth/guard/roles.guard';
 import { DevicesModule } from './devices/devices.module';
 import { UploadModule } from './upload/upload.module';
 import { InforMovementsModule } from './infor-movements/infor-movements.module';
+import { WebsocketsModule } from './websockets/websockets.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { InforMovementsModule } from './infor-movements/infor-movements.module';
     DevicesModule,
     UploadModule,
     InforMovementsModule,
+    WebsocketsModule,
   ],
   controllers: [],
   providers: [
