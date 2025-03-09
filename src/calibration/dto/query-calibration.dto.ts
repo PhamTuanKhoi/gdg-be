@@ -17,7 +17,7 @@ export class QueryCalibrationDto {
   @ApiProperty({
     description: 'ID của user để kiểm tra trạng thái đã xem',
     example: '3',
-    type: String,
+    type: Number,
   })
   @Type(() => Number)
   @IsInt()

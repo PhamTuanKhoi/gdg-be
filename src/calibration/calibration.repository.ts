@@ -6,14 +6,20 @@ import { CalibrationTypeEnum } from './enums/calibration.type.enum';
 import { Calibration } from './entities/calibration.entity';
 import { BaseRepository } from 'src/database/abstract.repository';
 import { QueryCalibrationDto } from './dto/query-calibration.dto';
+import { User } from 'src/users/entities/user.entity';
+import { CalibrationUser } from './entities/calibration-user.entity';
 
 @Injectable()
 export class CalibrationRepository extends BaseRepository<Calibration> {
   constructor(
     @InjectRepository(Calibration)
     private readonly calibrationRepository: Repository<Calibration>,
+    @InjectRepository(CalibrationUser)
+    private readonly calibrationUserRepository: Repository<CalibrationUser>,
     @InjectRepository(Device)
     private readonly deviceRepository: Repository<Device>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {
     super(calibrationRepository);
   }
@@ -35,10 +41,7 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
         'device.name_vi',
         'device.name_en',
       ])
-      .addSelect(
-        `CASE WHEN calibrationUsers.userId = :userId THEN true ELSE false END`,
-        'isViewed',
-      )
+      .addSelect(`CASE WHEN calibrationUsers.userId = :userId THEN true ELSE false END`, 'isViewed')
       .setParameter('userId', userId)
       .orderBy('calibration.id', 'DESC')
       .limit(limit); // Dùng .limit() thay vì .take()
@@ -91,5 +94,15 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
 
   async saveMany(entity: DeepPartial<Calibration>[]): Promise<Calibration[]> {
     return this.repository.save(entity) as Promise<Calibration[]>;
+  }
+
+  async findUserById(userId: number): Promise<User> {
+    if (!userId || userId == null) return;
+    return await this.userRepository.findOne({ where: { id: userId } });
+  }
+
+  async createAndSaveCalibrationUser(entityData: DeepPartial<CalibrationUser>): Promise<CalibrationUser> {
+    const entity = this.calibrationUserRepository.create(entityData);
+    return (await this.calibrationUserRepository.save(entity)) as CalibrationUser;
   }
 }

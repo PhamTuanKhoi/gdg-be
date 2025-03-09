@@ -1,9 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CronJob } from 'cron';
 import { CalibrationRepository } from './calibration.repository';
 import { CalibrationTypeEnum } from './enums/calibration.type.enum';
 import { Calibration } from './entities/calibration.entity';
 import { QueryCalibrationDto } from './dto/query-calibration.dto';
+import { CreateCalibrationUserDto } from './dto/create-calibration-user.dto';
+import { CalibrationUser } from './entities/calibration-user.entity';
 
 @Injectable()
 export class CalibrationService {
@@ -12,9 +14,31 @@ export class CalibrationService {
   private readonly logger = new Logger(CalibrationService.name);
 
   async findAll(queryCalibrationDto: QueryCalibrationDto) {
-    return await this.calibrationRepository.getLatestCalibrations(
-      queryCalibrationDto,
-    );
+    return await this.calibrationRepository.getLatestCalibrations(queryCalibrationDto);
+  }
+
+  async createCalibrationUser(dto: CreateCalibrationUserDto): Promise<CalibrationUser> {
+    const { userId, calibrationId } = dto;
+
+    try {
+      const [user, calibration] = await Promise.all([
+        this.calibrationRepository.findUserById(userId),
+        this.calibrationRepository.findById(calibrationId),
+      ]);
+
+      if (!user || user == null) throw new NotFoundException('user_does_not_exits');
+      if (!calibration || calibration == null) throw new NotFoundException('calibration_does_not_exits');
+
+      // Lưu vào database
+      const created = await this.calibrationRepository.createAndSaveCalibrationUser({ user, calibration });
+
+      this.logger.log(`created a calibration by id #${created?.id}`);
+
+      return created;
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException(error);
+    }
   }
 
   async onModuleInit() {
@@ -35,17 +59,14 @@ export class CalibrationService {
 
     job.start();
 
-    this.logger.debug(
-      `✅ Đã thêm cron job  calibration vào lúc 5h sáng mỗi ngày!`,
-    );
+    this.logger.debug(`✅ Đã thêm cron job  calibration vào lúc 5h sáng mỗi ngày!`);
   }
 
   async checkCalibraion() {
     try {
       this.logger.warn(`🕔 Đã đến 5h sáng! Chạy job: calibration`);
 
-      const devices =
-        await this.calibrationRepository.findDevicesMaintenanceOrCalibration();
+      const devices = await this.calibrationRepository.findDevicesMaintenanceOrCalibration();
 
       if (devices && devices.length > 0) {
         await this.createCalibrations(devices);

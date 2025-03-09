@@ -7,9 +7,10 @@ import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 import { Device } from 'src/devices/entities/device.entity';
 import { Calibration } from './entities/calibration.entity';
 import { CalibrationUser } from './entities/calibration-user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Device, Calibration, CalibrationUser])],
+  imports: [TypeOrmModule.forFeature([Device, Calibration, CalibrationUser, User])],
   controllers: [CalibrationController],
   providers: [CalibrationService, CalibrationRepository],
 })
