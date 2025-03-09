@@ -9,6 +9,12 @@ export class Calibration extends AbstractEntity<Calibration> {
   @Column({ type: 'varchar', length: 100, nullable: true })
   type: string;
 
+  @Column({ type: 'date', nullable: true })
+  maintenance: Date;
+
+  @Column({ type: 'date', nullable: true })
+  calibration: Date;
+
   @ManyToOne(() => Device, (device) => device.calibrations, {
     nullable: false,
     onDelete: 'CASCADE',

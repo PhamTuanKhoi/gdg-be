@@ -1,33 +1,65 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Device } from 'src/devices/entities/device.entity';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
+import { CalibrationTypeEnum } from './enums/calibration.type.enum';
+import { Calibration } from './entities/calibration.entity';
+import { BaseRepository } from 'src/database/abstract.repository';
 
 @Injectable()
-export class CalibrationRepository {
+export class CalibrationRepository extends BaseRepository<Calibration> {
   constructor(
+    @InjectRepository(Calibration)
+    private readonly calibrationRepository: Repository<Calibration>,
     @InjectRepository(Device)
     private readonly deviceRepository: Repository<Device>,
-  ) {}
+  ) {
+    super(calibrationRepository);
+  }
 
   async findDevicesMaintenanceOrCalibration() {
-    return await this.deviceRepository
-      .createQueryBuilder('device')
-      .select([
-        'device.id',
-        'device.code',
-        'device.next',
-        'device.maintenanceDate',
-        `CASE 
-      WHEN DATEDIFF(device.next, CURDATE()) <= device.notification_time THEN 'next'
-      WHEN DATEDIFF(device.maintenanceDate, CURDATE()) <= device.notification_time THEN 'maintenanceDate'
-    END AS matched_column`,
-      ])
-      .where('DATEDIFF(device.next, CURDATE()) <= device.notification_time')
-      .orWhere(
-        'DATEDIFF(device.maintenanceDate, CURDATE()) <= device.notification_time',
-      )
-      .orderBy('device.id', 'DESC')
-      .getRawMany(); // ⚡ Lấy dữ liệu thô để giữ cột matched_column
+    const rawQuery = `
+      SELECT DISTINCT
+          d.id,
+          d.code,
+          d.next,
+          d.notification_time,
+          d.maintenanceDate,
+          'next' AS type
+      FROM 
+          nestjs_typeorm.device d
+      LEFT JOIN 
+          nestjs_typeorm.calibration c ON d.id = c.deviceId 
+          AND c.type = '${CalibrationTypeEnum.CALIBRATION}'
+      WHERE 
+          DATEDIFF(d.next, CURDATE()) <= d.notification_time 
+          AND (c.calibration IS NULL OR d.next != c.calibration)
+
+      UNION
+
+      SELECT DISTINCT
+          d.id,
+          d.code,
+          d.next,
+          d.notification_time,
+          d.maintenanceDate,
+          'maintenanceDate' AS type
+      FROM 
+          nestjs_typeorm.device d
+      LEFT JOIN 
+          nestjs_typeorm.calibration c ON d.id = c.deviceId 
+          AND c.type = '${CalibrationTypeEnum.MAINTENANCE}'
+      WHERE 
+          DATEDIFF(d.maintenanceDate, CURDATE()) <= d.notification_time 
+          AND (c.maintenance IS NULL OR d.maintenanceDate != c.maintenance)
+      ORDER BY 
+          id ASC;
+    `;
+
+    return await this.deviceRepository.query(rawQuery);
+  }
+
+  async saveMany(entity: DeepPartial<Calibration>[]): Promise<Calibration[]> {
+    return this.repository.save(entity) as Promise<Calibration[]>;
   }
 }
