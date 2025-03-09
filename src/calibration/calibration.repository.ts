@@ -5,6 +5,7 @@ import { DeepPartial, Repository } from 'typeorm';
 import { CalibrationTypeEnum } from './enums/calibration.type.enum';
 import { Calibration } from './entities/calibration.entity';
 import { BaseRepository } from 'src/database/abstract.repository';
+import { QueryCalibrationDto } from './dto/query-calibration.dto';
 
 @Injectable()
 export class CalibrationRepository extends BaseRepository<Calibration> {
@@ -15,6 +16,35 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
     private readonly deviceRepository: Repository<Device>,
   ) {
     super(calibrationRepository);
+  }
+
+  async getLatestCalibrations(dto: QueryCalibrationDto): Promise<object> {
+    const { limit, userId } = dto;
+
+    const query = this.calibrationRepository
+      .createQueryBuilder('calibration')
+      .distinct(true) // Đảm bảo mỗi calibration chỉ xuất hiện một lần
+      .leftJoinAndSelect('calibration.calibrationUsers', 'calibrationUsers')
+      .leftJoinAndSelect('calibration.device', 'device')
+      .select([
+        'calibration.id as id',
+        'calibration.type as type',
+        'calibration.maintenance as maintenance',
+        'calibration.calibration as calibration',
+        'device.id',
+        'device.name_vi',
+        'device.name_en',
+      ])
+      .addSelect(
+        `CASE WHEN calibrationUsers.userId = :userId THEN true ELSE false END`,
+        'isViewed',
+      )
+      .setParameter('userId', userId)
+      .orderBy('calibration.id', 'DESC')
+      .limit(limit); // Dùng .limit() thay vì .take()
+
+    const calibrations = await query.getRawMany();
+    return { limit, data: calibrations };
   }
 
   async findDevicesMaintenanceOrCalibration() {

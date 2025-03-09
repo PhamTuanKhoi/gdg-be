@@ -3,13 +3,18 @@ import { CronJob } from 'cron';
 import { CalibrationRepository } from './calibration.repository';
 import { CalibrationTypeEnum } from './enums/calibration.type.enum';
 import { Calibration } from './entities/calibration.entity';
+import { QueryCalibrationDto } from './dto/query-calibration.dto';
 
 @Injectable()
 export class CalibrationService {
   constructor(private readonly calibrationRepository: CalibrationRepository) {}
+
   private readonly logger = new Logger(CalibrationService.name);
-  findAll() {
-    return `This action returns all calibration`;
+
+  async findAll(queryCalibrationDto: QueryCalibrationDto) {
+    return await this.calibrationRepository.getLatestCalibrations(
+      queryCalibrationDto,
+    );
   }
 
   async onModuleInit() {
@@ -36,15 +41,19 @@ export class CalibrationService {
   }
 
   async checkCalibraion() {
-    const devices =
-      await this.calibrationRepository.findDevicesMaintenanceOrCalibration();
+    try {
+      this.logger.warn(`🕔 Đã đến 5h sáng! Chạy job: calibration`);
 
-    if (devices && devices.length > 0) {
-      await this.createCalibrations(devices);
-      // send socket
+      const devices =
+        await this.calibrationRepository.findDevicesMaintenanceOrCalibration();
+
+      if (devices && devices.length > 0) {
+        await this.createCalibrations(devices);
+        // send socket
+      }
+    } catch (error) {
+      this.logger.error(error);
     }
-
-    this.logger.warn(`🕔 Đã đến 5h sáng! Chạy job: calibration`);
   }
 
   async createCalibrations(
