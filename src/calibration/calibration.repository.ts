@@ -29,8 +29,6 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
 
     const query = this.calibrationRepository
       .createQueryBuilder('calibration')
-      .distinct(true) // Đảm bảo mỗi calibration chỉ xuất hiện một lần
-      .leftJoinAndSelect('calibration.calibrationUsers', 'calibrationUsers')
       .leftJoinAndSelect('calibration.device', 'device')
       .select([
         'calibration.id as id',
@@ -42,10 +40,18 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
         'device.name_vi',
         'device.name_en',
       ])
-      .addSelect(`CASE WHEN calibrationUsers.userId = :userId THEN true ELSE false END`, 'isViewed')
+      .addSelect(
+        `EXISTS (
+        SELECT 1 
+        FROM calibration_user cu 
+        WHERE cu.calibrationId = calibration.id 
+        AND cu.userId = :userId
+      )`,
+        'isViewed',
+      )
       .setParameter('userId', userId)
       .orderBy('calibration.id', 'DESC')
-      .limit(limit); // Dùng .limit() thay vì .take()
+      .limit(limit);
 
     const calibrations = await query.getRawMany();
     return { limit, data: calibrations };
