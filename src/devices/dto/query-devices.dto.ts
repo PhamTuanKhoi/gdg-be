@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsInt, Min, IsString, IsIn } from 'class-validator';
-import { Type } from 'class-transformer'; 
+import { Type } from 'class-transformer';
 
 export class DeviceQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại' })
@@ -17,7 +17,7 @@ export class DeviceQueryDto {
   @Min(1)
   pageSize?: number = 10;
 
-  @ApiPropertyOptional({ example: 'thiet bi', description: 'Tìm kiếm theo tất cả các field' })
+  @ApiPropertyOptional({ description: 'Tìm kiếm theo tất cả các field' })
   @IsOptional()
   @IsString()
   query?: string;
@@ -27,9 +27,8 @@ export class DeviceQueryDto {
   @IsIn(['asc', 'desc', ''])
   order?: 'asc' | 'desc' | '';
 
-  @ApiPropertyOptional({ example: 'code', description: 'Cột sắp xếp' })
+  @ApiPropertyOptional({ example: 'id', description: 'Cột sắp xếp' })
   @IsOptional()
   @IsString()
   key?: string;
 }
-

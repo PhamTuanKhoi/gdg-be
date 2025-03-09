@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import * as XLSX from 'xlsx';
@@ -23,17 +19,11 @@ export class DevicesService {
     },
   ): Promise<Device> {
     createDeviceDto = Object.fromEntries(
-      Object.entries(createDeviceDto).filter(
-        ([_, value]) => value !== null && value !== undefined && value !== '',
-      ),
+      Object.entries(createDeviceDto).filter(([_, value]) => value !== null && value !== undefined && value !== ''),
     ) as CreateDeviceDto;
 
-    const existingCode = await this.devicesRepository.findOneByField(
-      'code',
-      createDeviceDto.code,
-    );
-    if (existingCode && existingCode !== null)
-      throw new ConflictException('Code đã tồn tại.');
+    const existingCode = await this.devicesRepository.findOneByField('code', createDeviceDto.code);
+    if (existingCode && existingCode !== null) throw new ConflictException('Code đã tồn tại.');
 
     if (files.certificate && files.certificate.length > 0) {
       createDeviceDto.certificate = `/upload/device/${files.certificate[0].filename}`; // chỉ 1 file certificate
@@ -61,11 +51,7 @@ export class DevicesService {
     const daysOffset = serial > 59 ? 1 : 0; // Bù lỗi năm 1900 của Excel
     const millisecondsInDay = 86400000;
     // Tính toán ngày, sau đó cộng thêm 1 ngày
-    const dateTime = new Date(
-      excelEpoch.getTime() +
-        (serial - daysOffset) * millisecondsInDay +
-        millisecondsInDay,
-    );
+    const dateTime = new Date(excelEpoch.getTime() + (serial - daysOffset) * millisecondsInDay + millisecondsInDay);
 
     // Định dạng theo yyyy-mm-dd dựa trên UTC
     const year = dateTime.getUTCFullYear();
@@ -75,20 +61,14 @@ export class DevicesService {
     return `${year}-${month}-${day}`;
   }
 
-  async importDevices(
-    fileBuffer: Buffer,
-  ): Promise<{ created: number; updated: number; errors: object[] }> {
+  async importDevices(fileBuffer: Buffer): Promise<{ created: number; updated: number; errors: object[] }> {
     // Đọc file Excel từ buffer
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     // delete row undefind
     const data: any[] = XLSX.utils
       .sheet_to_json(workbook.Sheets[sheetName])
-      .filter((row) =>
-        Object.values(row).some(
-          (value) => value !== undefined && value !== null && value !== '',
-        ),
-      );
+      .filter((row) => Object.values(row).some((value) => value !== undefined && value !== null && value !== ''));
 
     const result = { created: 0, updated: 0 };
 
@@ -106,19 +86,12 @@ export class DevicesService {
       console.log(`Xử lý STT ${row.STT}`);
 
       const calibrationDate =
-        typeof row.NCAL_DATE === 'number'
-          ? await this.excelSerialToDate(row.NCAL_DATE)
-          : row.NCAL_DATE;
+        typeof row.NCAL_DATE === 'number' ? await this.excelSerialToDate(row.NCAL_DATE) : row.NCAL_DATE;
       const calibrationEndDate =
-        typeof row.DUE_DATE === 'number'
-          ? await this.excelSerialToDate(row.DUE_DATE)
-          : row.DUE_DATE;
+        typeof row.DUE_DATE === 'number' ? await this.excelSerialToDate(row.DUE_DATE) : row.DUE_DATE;
 
       // find, findBy, findOne, findOneBy skips the query when the value is undefined or null
-      const device = await this.devicesRepository.findOneByField(
-        'code',
-        row.ASSET_NO,
-      );
+      const device = await this.devicesRepository.findOneByField('code', row.ASSET_NO);
 
       if (device) {
         // Update nếu device đã tồn tại
@@ -195,8 +168,8 @@ export class DevicesService {
     return await this.devicesRepository.findOneByField('code', code);
   }
 
-  async findByHistory(id: number) {
-    return await this.devicesRepository.findByHistory(id);
+  async findByHistory(id: number, queryDto: DeviceQueryDto) {
+    return await this.devicesRepository.findByHistory(id, queryDto);
   }
 
   async findOne(id: number) {
@@ -217,13 +190,10 @@ export class DevicesService {
     }
 
     const [existingCode] = await Promise.all([
-      updateDeviceDto.code
-        ? this.devicesRepository.findOneByField('code', updateDeviceDto.code)
-        : null,
+      updateDeviceDto.code ? this.devicesRepository.findOneByField('code', updateDeviceDto.code) : null,
     ]);
 
-    if (existingCode && existingCode.id !== +id)
-      throw new ConflictException('Code đã tồn tại.');
+    if (existingCode && existingCode.id !== +id) throw new ConflictException('Code đã tồn tại.');
 
     if (files?.files?.length > 0) {
       for (const file of files.files) {

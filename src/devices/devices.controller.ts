@@ -16,16 +16,8 @@ import {
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
-import {
-  ApiConsumes,
-  ApiBody,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { ApiConsumes, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ImportResultDto } from './dto/import-device.dto';
 import { DeviceQueryDto } from './dto/query-devices.dto';
 import { diskStorageFileName } from 'src/upload/upload.utils';
@@ -85,9 +77,7 @@ export class DevicesController {
   })
   @ApiResponse({ status: 400, description: 'File không hợp lệ' })
   @UseInterceptors(FileInterceptor('file'))
-  async importDevices(
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<ImportResultDto> {
+  async importDevices(@UploadedFile() file: Express.Multer.File): Promise<ImportResultDto> {
     if (!file) {
       throw new HttpException('File is required', HttpStatus.BAD_REQUEST);
     }
@@ -109,8 +99,8 @@ export class DevicesController {
   }
 
   @Get('history/:id')
-  findByHistory(@Param('id') id: string) {
-    return this.devicesService.findByHistory(+id);
+  findByHistory(@Param('id') id: string, @Query() queryDto: DeviceQueryDto) {
+    return this.devicesService.findByHistory(+id, queryDto);
   }
 
   @Get(':id')
