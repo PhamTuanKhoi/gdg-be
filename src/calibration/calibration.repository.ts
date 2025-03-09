@@ -25,7 +25,8 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
   }
 
   async getLatestCalibrations(dto: QueryCalibrationDto): Promise<object> {
-    const { limit, userId } = dto;
+    const { limit, pageIndex, userId } = dto;
+    const offset = (pageIndex - 1) * limit;
 
     const query = this.calibrationRepository
       .createQueryBuilder('calibration')
@@ -42,19 +43,29 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
       ])
       .addSelect(
         `EXISTS (
-        SELECT 1 
-        FROM calibration_user cu 
-        WHERE cu.calibrationId = calibration.id 
-        AND cu.userId = :userId
-      )`,
+      SELECT 1 
+      FROM calibration_user cu 
+      WHERE cu.calibrationId = calibration.id 
+      AND cu.userId = :userId
+    )`,
         'isViewed',
       )
       .setParameter('userId', userId)
       .orderBy('calibration.id', 'DESC')
-      .limit(limit);
+      .limit(limit)
+      .offset(offset); // Thêm offset để phân trang
 
-    const calibrations = await query.getRawMany();
-    return { limit, data: calibrations };
+    const [calibrations, total] = await Promise.all([
+      query.getRawMany(),
+      query.getCount(), // Đếm tổng số bản ghi
+    ]);
+
+    return {
+      pageIndex,
+      limit,
+      total,
+      data: calibrations,
+    };
   }
 
   async findDevicesMaintenanceOrCalibration() {

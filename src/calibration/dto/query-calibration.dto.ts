@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, Min } from 'class-validator';
+import { IsInt, IsOptional, Min } from 'class-validator';
 
 export class QueryCalibrationDto {
   @ApiProperty({
@@ -13,6 +13,13 @@ export class QueryCalibrationDto {
   @IsInt()
   @Min(1)
   limit: number;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  pageIndex?: number = 1;
 
   @ApiProperty({
     description: 'ID của user để kiểm tra trạng thái đã xem',
