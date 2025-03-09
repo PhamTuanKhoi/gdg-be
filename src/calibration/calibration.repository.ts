@@ -37,6 +37,7 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
         'calibration.type as type',
         'calibration.maintenance as maintenance',
         'calibration.calibration as calibration',
+        'calibration.createdAt as createdAt',
         'device.id',
         'device.name_vi',
         'device.name_en',
