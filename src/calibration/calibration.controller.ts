@@ -5,7 +5,7 @@ import { QueryCalibrationDto } from './dto/query-calibration.dto';
 import { CreateCalibrationUserDto } from './dto/create-calibration-user.dto';
 
 @ApiTags('calibrations')
-@Controller('calibration')
+@Controller('notification')
 export class CalibrationController {
   constructor(private readonly calibrationService: CalibrationService) {}
 

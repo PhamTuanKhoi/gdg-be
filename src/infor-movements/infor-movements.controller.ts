@@ -1,21 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { InforMovementsService } from './infor-movements.service';
 import { CreateInforMovementDto } from './dto/create-infor-movement.dto';
 import { UpdateInforMovementDto } from './dto/update-infor-movement.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InforMovementQueryDto } from './dto/query-infor-movements.dto';
 
-@ApiTags('Infor Movement')
-@Controller('infor-movements')
+@ApiTags('Info Movement')
+@Controller('info-movements')
 export class InforMovementsController {
   constructor(private readonly inforMovementsService: InforMovementsService) {}
 
@@ -50,10 +41,7 @@ export class InforMovementsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'cập nhật thông tin di chuyển' })
-  async update(
-    @Param('id') id: string,
-    @Body() updateInforMovementDto: UpdateInforMovementDto,
-  ) {
+  async update(@Param('id') id: string, @Body() updateInforMovementDto: UpdateInforMovementDto) {
     return this.inforMovementsService.update(+id, updateInforMovementDto);
   }
 
