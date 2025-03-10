@@ -105,10 +105,6 @@ export class DevicesRepository extends BaseRepository<Device> {
       // console.log('Generated SQL:', queryBuilder.getSql()); // Debug SQL
       const [results, total] = await queryBuilder.getManyAndCount();
 
-      if (!results.length && pageIndex === 1) {
-        throw new NotFoundException(`Không tìm thấy bản ghi DeviceInOut nào cho device ID ${id}`);
-      }
-
       return {
         data: results,
         total,
