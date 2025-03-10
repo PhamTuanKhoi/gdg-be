@@ -86,17 +86,47 @@ export class CalibrationService {
     }[],
   ) {
     try {
-      const calibrations = devices.map(({ id, type, maintenanceDate, next }) =>
-        this.calibrationRepository.create({
+      const calibrations = [];
+      for (const { id, type, maintenanceDate, next } of devices) {
+        // --------------------- check calibration type next exists ------------------------
+        if (type === CalibrationTypeEnum.CALIBRATION) {
+          if (!next || next == null || next.toString() === '') continue;
+
+          const calibrationExisting = await this.calibrationRepository.findCalibrationByDeviceNext(type, next, id);
+
+          this.logger.debug(`calibrationExisting type next id #${calibrationExisting?.id}`);
+          if (calibrationExisting && calibrationExisting != null) continue;
+        }
+
+        // --------------------- check calibration type maintenance exists ------------------------
+        if (type === CalibrationTypeEnum.MAINTENANCE) {
+          if (!maintenanceDate || maintenanceDate == null || maintenanceDate.toString() === '') continue;
+
+          const calibrationExisting = await this.calibrationRepository.findCalibrationByDeviceMaintenance(
+            type,
+            maintenanceDate,
+            id,
+          );
+
+          this.logger.debug(`calibrationExisting type maintenanceDate id #${calibrationExisting?.id}`);
+          if (calibrationExisting && calibrationExisting != null) continue;
+        }
+
+        const calibration = this.calibrationRepository.create({
           device: { id },
           type,
           maintenance: maintenanceDate,
           calibration: next,
-        }),
-      );
+        });
 
-      await this.calibrationRepository.saveMany(calibrations as Calibration[]);
-      this.logger.log(`saved ${devices.length} devices`);
+        this.logger.log(`push calibration with device id#${id} type#${type}`);
+        calibrations.push(calibration);
+      }
+
+      if (calibrations.length > 0) {
+        await this.calibrationRepository.saveMany(calibrations as Calibration[]);
+        this.logger.log(`saved ${calibrations.length} devices`);
+      }
     } catch (error) {
       this.logger.error(error);
     }

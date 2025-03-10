@@ -77,14 +77,17 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
           d.notification_time,
           d.maintenanceDate,
           'next' AS type
-      FROM 
+      FROM
           nestjs_typeorm.device d
-      LEFT JOIN 
-          nestjs_typeorm.calibration c ON d.id = c.deviceId 
-          AND c.type = '${CalibrationTypeEnum.CALIBRATION}'
-      WHERE 
-          DATEDIFF(d.next, CURDATE()) <= d.notification_time 
-          AND (c.calibration IS NULL OR d.next != c.calibration)
+      WHERE
+          DATEDIFF(d.next, CURDATE()) <= d.notification_time
+          AND NOT EXISTS (
+              SELECT 1
+              FROM nestjs_typeorm.calibration c
+              WHERE c.deviceId = d.id
+              AND c.type = '${CalibrationTypeEnum.CALIBRATION}'
+              AND c.calibration = d.next
+          )
 
       UNION
 
@@ -95,15 +98,18 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
           d.notification_time,
           d.maintenanceDate,
           'maintenanceDate' AS type
-      FROM 
+      FROM
           nestjs_typeorm.device d
-      LEFT JOIN 
-          nestjs_typeorm.calibration c ON d.id = c.deviceId 
-          AND c.type = '${CalibrationTypeEnum.MAINTENANCE}'
-      WHERE 
-          DATEDIFF(d.maintenanceDate, CURDATE()) <= d.notification_time 
-          AND (c.maintenance IS NULL OR d.maintenanceDate != c.maintenance)
-      ORDER BY 
+      WHERE
+          DATEDIFF(d.maintenanceDate, CURDATE()) <= d.notification_time
+          AND NOT EXISTS (
+              SELECT 1
+              FROM nestjs_typeorm.calibration c
+              WHERE c.deviceId = d.id
+              AND c.type = '${CalibrationTypeEnum.MAINTENANCE}'
+              AND c.maintenance = d.maintenanceDate
+          )
+      ORDER BY
           id ASC;
     `;
 
@@ -122,5 +128,29 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
   async createAndSaveCalibrationUser(entityData: DeepPartial<CalibrationUser>): Promise<CalibrationUser> {
     const entity = this.calibrationUserRepository.create(entityData);
     return (await this.calibrationUserRepository.save(entity)) as CalibrationUser;
+  }
+
+  async findCalibrationByDeviceNext(type: CalibrationTypeEnum, next: Date, deviceId: number): Promise<Calibration> {
+    return await this.calibrationRepository.findOne({
+      where: {
+        device: { id: deviceId },
+        calibration: next,
+        type,
+      },
+    });
+  }
+
+  async findCalibrationByDeviceMaintenance(
+    type: CalibrationTypeEnum,
+    maintenanceDate: Date,
+    deviceId: number,
+  ): Promise<Calibration> {
+    return await this.calibrationRepository.findOne({
+      where: {
+        device: { id: deviceId },
+        maintenance: maintenanceDate,
+        type,
+      },
+    });
   }
 }
