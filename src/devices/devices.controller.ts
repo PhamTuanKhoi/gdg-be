@@ -89,8 +89,17 @@ export class DevicesController {
     summary: 'Lấy danh sách device có phân trang, tìm kiếm và sắp xếp',
   })
   @ApiResponse({ status: 200, description: 'Danh sách device được trả về.' })
-  async getAllUsers(@Query() queryDto: DeviceQueryDto) {
+  async getAllDevice(@Query() queryDto: DeviceQueryDto) {
     return this.devicesService.findAll(queryDto);
+  }
+
+  @Get('calibration')
+  @ApiOperation({
+    summary: 'Lấy danh sách device hiệu chuẩn có phân trang, tìm kiếm và sắp xếp',
+  })
+  @ApiResponse({ status: 200, description: 'Danh sách device được trả về.' })
+  async findAllCalibration(@Query() queryDto: DeviceQueryDto) {
+    return this.devicesService.findAllCalibration(queryDto);
   }
 
   @Get('code/:code')

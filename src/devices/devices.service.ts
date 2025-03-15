@@ -164,6 +164,10 @@ export class DevicesService {
     return await this.devicesRepository.findAll(queryDto);
   }
 
+  async findAllCalibration(queryDto: DeviceQueryDto) {
+    return await this.devicesRepository.findAllCalibration(queryDto);
+  }
+
   async findByCode(code: string): Promise<Device> {
     return await this.devicesRepository.findOneByField('code', code);
   }

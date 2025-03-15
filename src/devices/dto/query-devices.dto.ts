@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsInt, Min, IsString, IsIn, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { DeviceCalibrationEnum } from '../enums/device.calibration.enum';
 
 export class DeviceQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại' })
@@ -31,4 +32,9 @@ export class DeviceQueryDto {
   @IsOptional()
   @IsString()
   key?: string;
+
+  @ApiPropertyOptional({ description: 'Trạng thái hiệu chuẩn' })
+  @IsOptional()
+  @IsEnum(DeviceCalibrationEnum)
+  statusFilter?: DeviceCalibrationEnum;
 }

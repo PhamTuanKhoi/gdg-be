@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Device } from './entities/device.entity';
 import { DeviceMedia } from 'src/devices/entities/device-media.entity';
@@ -6,6 +6,7 @@ import { DeviceQueryDto } from './dto/query-devices.dto';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { BaseRepository } from 'src/database/abstract.repository';
 import { DeviceInOut } from 'src/infor-movements/entities/device-in-out.entity';
+import { DeviceCalibrationEnum } from './enums/device.calibration.enum';
 
 @Injectable()
 export class DevicesRepository extends BaseRepository<Device> {
@@ -50,6 +51,155 @@ export class DevicesRepository extends BaseRepository<Device> {
     });
 
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
+  }
+
+  async findAllCalibration({ query, order, key, pageIndex = 1, pageSize = 10, statusFilter }: DeviceQueryDto): Promise<{
+    total: number;
+    pageIndex: number;
+    pageSize: number;
+    data: any[]; // Dữ liệu thô, bao gồm medias dưới dạng mảng
+  }> {
+    // Xây dựng điều kiện WHERE và tham số
+    const whereConditions: string[] = [];
+    const queryParams: string[] = [];
+
+    if (query) {
+      whereConditions.push('(d.name_vi LIKE ? OR d.name_en LIKE ?)');
+      queryParams.push(`%${query}%`, `%${query}%`);
+    }
+
+    if (statusFilter) {
+      switch (statusFilter) {
+        case DeviceCalibrationEnum.OVERDUE:
+          whereConditions.push('DATEDIFF(d.next, CURDATE()) < 0');
+          break;
+        case DeviceCalibrationEnum.NEAR_DUE:
+          whereConditions.push(
+            'DATEDIFF(d.next, CURDATE()) <= d.notification_time AND DATEDIFF(d.next, CURDATE()) >= 0',
+          );
+          break;
+        case DeviceCalibrationEnum.UPCOMING:
+          whereConditions.push('DATEDIFF(d.next, CURDATE()) > d.notification_time');
+          break;
+      }
+    }
+
+    const whereClause = whereConditions.length ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    const orderClause = await this.validKeyDeviceCalibration(key, order);
+
+    const limitOffset = `LIMIT ${pageSize} OFFSET ${(pageIndex - 1) * pageSize}`;
+
+    // Truy vấn chính: Thêm cột maintenance và sắp xếp theo nó
+    const rawQuery = `
+      SELECT
+        d.id,
+        d.code,
+        d.name_vi,
+        d.name_en,
+        d.serial,
+        d.last,
+        d.next,
+        d.certificate,
+        d.notification_time,
+        d.maintenanceDate,
+        d.type,
+        d.period,
+        d.status,
+        CASE
+          WHEN DATEDIFF(d.next, CURDATE()) < 0 THEN '${DeviceCalibrationEnum.OVERDUE}'
+          WHEN DATEDIFF(d.next, CURDATE()) <= d.notification_time THEN '${DeviceCalibrationEnum.NEAR_DUE}'
+          ELSE '${DeviceCalibrationEnum.UPCOMING}'
+        END AS calibrationStatus,
+        DATEDIFF(d.maintenanceDate, CURDATE()) AS maintenance, 
+        IFNULL(
+          JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'id', dm.id,
+              'url', dm.media
+            )
+          ), '[]'
+        ) AS medias
+      FROM
+        nestjs_typeorm.device d
+      LEFT JOIN
+        nestjs_typeorm.device_media dm ON dm.deviceId = d.id
+      ${whereClause}
+      GROUP BY
+        d.id
+      ${orderClause}
+      ${limitOffset};
+    `;
+
+    // Truy vấn đếm tổng số bản ghi
+    const countQuery = `
+      SELECT COUNT(DISTINCT d.id) AS total
+      FROM nestjs_typeorm.device d
+      ${whereClause};
+    `;
+
+    // In truy vấn để debug
+    // console.log('rawQuery:', rawQuery);
+    // console.log('queryParams:', queryParams);
+
+    // Thực thi truy vấn
+    const [data, countResult] = await Promise.all([
+      this.deviceRepository.query(rawQuery, queryParams),
+      this.deviceRepository.query(countQuery, queryParams),
+    ]);
+
+    const total = parseInt(countResult[0].total, 10);
+
+    const parsedData = data.map((item) => ({
+      ...item,
+      medias: (JSON.parse(item?.medias) || [])?.filter((i) => i?.id != null) || [],
+    }));
+
+    return {
+      total,
+      pageIndex: +pageIndex,
+      pageSize: +pageSize,
+      data: parsedData,
+    };
+  }
+
+  async validKeyDeviceCalibration(key, order): Promise<string> {
+    const validKeys = [
+      'id',
+      'code',
+      'name_vi',
+      'name_en',
+      'manufacturer',
+      'model',
+      'serial',
+      'place',
+      'location',
+      'last',
+      'next',
+      'certificate',
+      'notification_time',
+      'maintenanceDate',
+      'description',
+      'type',
+      'period',
+      'status',
+      'maintenance',
+    ];
+    if (key && !validKeys.includes(key)) {
+      throw new BadRequestException(`Invalid sort key: ${key}`);
+    }
+
+    let orderClause = '';
+    if (key && order) {
+      const sortField = key === 'maintenance' ? 'maintenance' : `d.${key}`;
+      // Sắp xếp theo key chính, sau đó theo id làm tiêu chí phụ
+      orderClause = `ORDER BY ${sortField} ${order.toUpperCase()}, d.id ASC`;
+    } else {
+      // Mặc định: maintenance trước, id sau
+      orderClause = `ORDER BY maintenance ASC, d.id ASC`;
+    }
+
+    return orderClause;
   }
 
   async findByHistory(id: number, { query, order = 'asc', key = 'id', pageIndex = 1, pageSize = 10 }: DeviceQueryDto) {
