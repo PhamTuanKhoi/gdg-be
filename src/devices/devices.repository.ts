@@ -7,6 +7,7 @@ import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { BaseRepository } from 'src/database/abstract.repository';
 import { DeviceInOut } from 'src/infor-movements/entities/device-in-out.entity';
 import { DeviceCalibrationEnum } from './enums/device.calibration.enum';
+import { DeviceHistoryQueryDto } from './dto/query-history.dto';
 
 @Injectable()
 export class DevicesRepository extends BaseRepository<Device> {
@@ -202,7 +203,10 @@ export class DevicesRepository extends BaseRepository<Device> {
     return orderClause;
   }
 
-  async findByHistory(id: number, { query, order = 'asc', key = 'id', pageIndex = 1, pageSize = 10 }: DeviceQueryDto) {
+  async findByHistory(
+    id: number,
+    { query, order = 'asc', key = 'id', pageIndex = 1, pageSize = 10, date }: DeviceHistoryQueryDto,
+  ) {
     const queryBuilder = this.deviceInOutRepository
       .createQueryBuilder('deviceInOut')
       // Select specific fields from DeviceInOut
@@ -220,7 +224,7 @@ export class DevicesRepository extends BaseRepository<Device> {
       .leftJoin('deviceInOut.device', 'device')
       .addSelect(['device.id', 'device.code', 'device.name_en', 'device.name_vi'])
       // Join medias (get all)
-      .leftJoinAndSelect('device.medias', 'medias')
+      // .leftJoinAndSelect('device.medias', 'medias')
       // Join removingTech without selecting all, just select name
       .leftJoin('inforMovement.removingTech', 'removingTech')
       .addSelect(['removingTech.id', 'removingTech.name'])
@@ -228,6 +232,17 @@ export class DevicesRepository extends BaseRepository<Device> {
       .leftJoin('inforMovement.returningTech', 'returningTech')
       .addSelect(['returningTech.id', 'returningTech.name'])
       .where('device.id = :deviceId', { deviceId: id });
+
+    // Thêm điều kiện lọc theo khoảng thời gian dateIn và dateOut
+    if (date && date.length >= 2) {
+      const startDate = date[0];
+      const endDate = date[1];
+      queryBuilder.andWhere(
+        `(deviceInOut.dateIn BETWEEN :startDate AND :endDate 
+          OR deviceInOut.dateOut BETWEEN :startDate AND :endDate)`,
+        { startDate, endDate },
+      );
+    }
 
     if (query) {
       queryBuilder.andWhere(

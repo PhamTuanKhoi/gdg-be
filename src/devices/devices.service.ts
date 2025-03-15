@@ -6,6 +6,7 @@ import { DevicesRepository } from './devices.repository';
 import { Device } from './entities/device.entity';
 import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 import { DeviceQueryDto } from './dto/query-devices.dto';
+import { DeviceHistoryQueryDto } from './dto/query-history.dto';
 
 @Injectable()
 export class DevicesService {
@@ -172,7 +173,7 @@ export class DevicesService {
     return await this.devicesRepository.findOneByField('code', code);
   }
 
-  async findByHistory(id: number, queryDto: DeviceQueryDto) {
+  async findByHistory(id: number, queryDto: DeviceHistoryQueryDto) {
     return await this.devicesRepository.findByHistory(id, queryDto);
   }
 

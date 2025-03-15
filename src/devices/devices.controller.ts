@@ -21,6 +21,7 @@ import { ApiConsumes, ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger
 import { ImportResultDto } from './dto/import-device.dto';
 import { DeviceQueryDto } from './dto/query-devices.dto';
 import { diskStorageFileName } from 'src/upload/upload.utils';
+import { DeviceHistoryQueryDto } from './dto/query-history.dto';
 
 @Controller('devices')
 export class DevicesController {
@@ -108,7 +109,7 @@ export class DevicesController {
   }
 
   @Get('history/:id')
-  findByHistory(@Param('id') id: string, @Query() queryDto: DeviceQueryDto) {
+  findByHistory(@Param('id') id: string, @Query() queryDto: DeviceHistoryQueryDto) {
     return this.devicesService.findByHistory(+id, queryDto);
   }
 
