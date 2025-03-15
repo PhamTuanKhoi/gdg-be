@@ -17,6 +17,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         // migrations: ['dist/migrations/*.js'],
         migrationsRun: true, // 🚀 Tự động chạy migration khi khởi động
         logging: false,
+        timezone: 'Asia/Ho_Chi_Minh',
       }),
       inject: [ConfigService],
     }),
