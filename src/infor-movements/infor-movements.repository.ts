@@ -23,72 +23,65 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
     super(inforMovementRepository);
   }
 
-  async findAll({
-    query,
-    order,
-    key,
-    pageIndex = 1,
-    pageSize = 10,
-  }: InforMovementQueryDto): Promise<{
+  async findAll({ query, order, key, pageIndex = 1, pageSize = 10 }: InforMovementQueryDto): Promise<{
     total: number;
     pageIndex: number;
     pageSize: number;
     data: InforMovement[];
   }> {
-    const queryBuilder = this.inforMovementRepository
+    const baseQuery = this.inforMovementRepository
       .createQueryBuilder('inforMovement')
-      .leftJoinAndSelect('inforMovement.removingTech', 'removingTech')
-      .leftJoinAndSelect('inforMovement.returningTech', 'returningTech')
-      .leftJoin('inforMovement.deviceInOuts', 'deviceInOut')
-      .select([
-        'inforMovement.id AS id',
-        'inforMovement.createdAt as createdAt',
-        'inforMovement.updatedAt as updatedAt',
-        'inforMovement.ownerName as ownerName',
-        'inforMovement.address as address',
-        'inforMovement.technician as technician',
-        'inforMovement.date as date',
-        'inforMovement.toDate as toDate',
-        'inforMovement.location as location',
-        'inforMovement.toLocation as toLocation',
-        'inforMovement.signature as signature',
-        'inforMovement.total as total',
-        'inforMovement.qcVerifyingRemoving as qcVerifyingRemoving',
-        'inforMovement.qcVerifyingReturning as qcVerifyingReturning',
-        'inforMovement.notes as notes',
-        "JSON_OBJECT('id', removingTech.id, 'name', removingTech.name) AS removingTech",
-        "JSON_OBJECT('id', returningTech.id, 'name', returningTech.name) AS returningTech",
-        'SUM(CASE WHEN deviceInOut.dateIn IS NOT NULL THEN 1 ELSE 0 END) AS totalReturned',
-      ])
-      .groupBy('inforMovement.id, removingTech.id, returningTech.id');
+      .leftJoin('inforMovement.deviceInOuts', 'deviceInOut');
 
-    // ✅ Thêm điều kiện tìm kiếm (where)
+    // ✅ Xử lý tìm kiếm
     if (query) {
-      queryBuilder.andWhere(
+      baseQuery.andWhere(
         `inforMovement.ownerName LIKE :query 
-      OR inforMovement.address LIKE :query 
-      OR inforMovement.technician LIKE :query 
-      OR inforMovement.location LIKE :query 
-      OR inforMovement.toLocation LIKE :query 
-      OR inforMovement.signature LIKE :query`,
+        OR inforMovement.address LIKE :query 
+        OR inforMovement.technician LIKE :query 
+        OR inforMovement.location LIKE :query 
+        OR inforMovement.toLocation LIKE :query 
+        OR inforMovement.signature LIKE :query`,
         { query: `%${query}%` },
       );
     }
 
-    // ✅ Sắp xếp
-    if (key) {
-      queryBuilder.orderBy(
-        `inforMovement.${key}`,
-        order.toUpperCase() as 'ASC' | 'DESC',
-      );
-    }
+    // ✅ Đếm total chính xác (không dùng `GROUP BY`)
+    const total = await baseQuery
+      .clone()
+      .select('COUNT(DISTINCT inforMovement.id)', 'count')
+      .getRawOne()
+      .then((res) => Number(res.count));
 
-    const data = await queryBuilder
-      .skip((pageIndex - 1) * pageSize)
-      .take(pageSize)
+    // ✅ Query lấy dữ liệu (có `GROUP BY`, phân trang đúng)
+    const data = await baseQuery
+      .leftJoinAndSelect('inforMovement.removingTech', 'removingTech')
+      .leftJoinAndSelect('inforMovement.returningTech', 'returningTech')
+      .select([
+        'inforMovement.id AS id',
+        'inforMovement.createdAt AS createdAt',
+        'inforMovement.updatedAt AS updatedAt',
+        'inforMovement.ownerName AS ownerName',
+        'inforMovement.address AS address',
+        'inforMovement.technician AS technician',
+        'inforMovement.date AS date',
+        'inforMovement.toDate AS toDate',
+        'inforMovement.location AS location',
+        'inforMovement.toLocation AS toLocation',
+        'inforMovement.signature AS signature',
+        'inforMovement.total AS total',
+        'inforMovement.qcVerifyingRemoving AS qcVerifyingRemoving',
+        'inforMovement.qcVerifyingReturning AS qcVerifyingReturning',
+        'inforMovement.notes AS notes',
+        "JSON_OBJECT('id', removingTech.id, 'name', removingTech.name) AS removingTech",
+        "JSON_OBJECT('id', returningTech.id, 'name', returningTech.name) AS returningTech",
+        'SUM(CASE WHEN deviceInOut.dateIn IS NOT NULL THEN 1 ELSE 0 END) AS totalReturned',
+      ])
+      .groupBy('inforMovement.id')
+      .orderBy(key ? `inforMovement.${key}` : 'inforMovement.createdAt', order?.toUpperCase() as 'ASC' | 'DESC')
+      .offset((pageIndex - 1) * pageSize)
+      .limit(pageSize)
       .getRawMany();
-
-    const total = data.length; // ✅ Sửa lỗi đếm tổng số bản ghi
 
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
   }
@@ -96,12 +89,7 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
   async findRelationById(id: number): Promise<InforMovement> {
     return await this.inforMovementRepository.findOne({
       where: { id },
-      relations: [
-        'deviceInOuts',
-        'deviceInOuts.device',
-        'removingTech',
-        'returningTech',
-      ],
+      relations: ['deviceInOuts', 'deviceInOuts.device', 'removingTech', 'returningTech'],
     });
   }
 
@@ -125,10 +113,7 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
     });
   }
 
-  async findDeviceInOutByMovementAndDevices(
-    inforMovementId: number,
-    deviceIds: number[],
-  ): Promise<DeviceInOut[]> {
+  async findDeviceInOutByMovementAndDevices(inforMovementId: number, deviceIds: number[]): Promise<DeviceInOut[]> {
     return await this.deviceInOutRepository.find({
       where: {
         inforMovement: { id: inforMovementId },
