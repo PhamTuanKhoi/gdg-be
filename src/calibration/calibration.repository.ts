@@ -25,10 +25,10 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
   }
 
   async getLatestCalibrations(dto: QueryCalibrationDto): Promise<object> {
-    const { limit, pageIndex, userId } = dto;
-    const offset = (pageIndex - 1) * limit;
+    const { pageSize, pageIndex, userId, query, order, key, isViewed } = dto;
+    const offset = (pageIndex - 1) * pageSize;
 
-    const query = this.calibrationRepository
+    const queryBuilder = this.calibrationRepository
       .createQueryBuilder('calibration')
       .leftJoinAndSelect('calibration.device', 'device')
       .select([
@@ -43,29 +43,57 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
       ])
       .addSelect(
         `EXISTS (
-      SELECT 1 
-      FROM calibration_user cu 
-      WHERE cu.calibrationId = calibration.id 
-      AND cu.userId = :userId
-    )`,
+          SELECT 1 
+          FROM calibration_user cu 
+          WHERE cu.calibrationId = calibration.id 
+          AND cu.userId = :userId
+        )`,
         'isViewed',
       )
-      .setParameter('userId', userId)
-      .orderBy('calibration.id', 'DESC')
-      .limit(limit)
-      .offset(offset); // Thêm offset để phân trang
+      .setParameter('userId', userId);
 
-    const [calibrations, total] = await Promise.all([
-      query.getRawMany(),
-      query.getCount(), // Đếm tổng số bản ghi
-    ]);
+    if (query) {
+      queryBuilder.andWhere(`(device.name_vi LIKE :query OR device.name_en LIKE :query)`, { query: `%${query}%` });
+    }
 
-    return {
-      pageIndex,
-      limit,
-      total,
-      data: calibrations,
-    };
+    // Thêm điều kiện lọc theo isViewed
+    if (isViewed !== undefined) {
+      queryBuilder.andWhere(
+        `EXISTS (
+          SELECT 1 
+          FROM calibration_user cu 
+          WHERE cu.calibrationId = calibration.id 
+          AND cu.userId = :userId
+        ) = :isViewed`,
+        { isViewed },
+      );
+    }
+
+    const validKeys = ['id', 'createdAt', 'type', 'maintenance', 'calibration', 'isViewed'];
+    const orderKey = validKeys.includes(key) ? key : 'id';
+    const orderDirection: 'ASC' | 'DESC' = order === 'asc' ? 'ASC' : 'DESC';
+
+    if (orderKey === 'isViewed') {
+      queryBuilder.orderBy('isViewed', orderDirection);
+    } else {
+      queryBuilder.orderBy(`calibration.${orderKey}`, orderDirection);
+    }
+
+    queryBuilder.limit(pageSize).offset(offset);
+
+    try {
+      const [calibrations, total] = await Promise.all([queryBuilder.getRawMany(), queryBuilder.getCount()]);
+
+      return {
+        pageIndex,
+        pageSize,
+        total,
+        data: calibrations,
+      };
+    } catch (error) {
+      console.error('Lỗi khi thực thi truy vấn:', error);
+      throw error;
+    }
   }
 
   async findDevicesMaintenanceOrCalibration() {
