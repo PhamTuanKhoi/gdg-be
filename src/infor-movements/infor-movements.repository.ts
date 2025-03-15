@@ -78,7 +78,7 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
         'SUM(CASE WHEN deviceInOut.dateIn IS NOT NULL THEN 1 ELSE 0 END) AS totalReturned',
       ])
       .groupBy('inforMovement.id')
-      .orderBy(key ? `inforMovement.${key}` : 'inforMovement.createdAt', order?.toUpperCase() as 'ASC' | 'DESC')
+      .orderBy(key ? `inforMovement.${key}` : 'inforMovement.id', order?.toUpperCase() as 'ASC' | 'DESC')
       .offset((pageIndex - 1) * pageSize)
       .limit(pageSize)
       .getRawMany();
