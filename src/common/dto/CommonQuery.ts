@@ -29,7 +29,7 @@ export class CommonQueryDto {
   @ApiPropertyOptional({ example: 'asc', enum: ['asc', 'desc', ''] })
   @IsOptional()
   @IsIn(['asc', 'desc', ''])
-  order?: 'asc' | 'desc' | '' = 'asc';
+  order?: 'asc' | 'desc' | '';
 
   @ApiPropertyOptional({ example: 'username' })
   @IsOptional()

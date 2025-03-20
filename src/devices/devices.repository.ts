@@ -261,7 +261,7 @@ export class DevicesRepository extends BaseRepository<Device> {
     const validKeys = ['id', 'createdAt', 'updatedAt', 'dateIn', 'dateOut'];
     const orderKey = validKeys.includes(key) ? key : 'id';
 
-    queryBuilder.orderBy(`deviceInOut.${orderKey}`, order.toUpperCase() as 'ASC' | 'DESC');
+    queryBuilder.orderBy(`deviceInOut.${orderKey}`, order ? (order.toUpperCase() as 'ASC' | 'DESC') : 'ASC');
 
     const skip = (pageIndex - 1) * pageSize;
     queryBuilder.skip(skip).take(pageSize);
