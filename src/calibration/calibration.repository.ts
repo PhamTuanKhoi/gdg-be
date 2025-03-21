@@ -148,14 +148,42 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
     return this.repository.save(entity) as Promise<Calibration[]>;
   }
 
+  async findAll(): Promise<Calibration[]> {
+    return await this.calibrationRepository.find();
+  }
+
   async findUserById(userId: number): Promise<User> {
     if (!userId || userId == null) return;
     return await this.userRepository.findOne({ where: { id: userId } });
   }
 
+  async findCalibrationUserByUserId(userId: number): Promise<CalibrationUser[]> {
+    return await this.calibrationUserRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: ['calibration'],
+    });
+  }
+
+  async findCalibrationNotIds(ids: number[]): Promise<Calibration[]> {
+    return await this.calibrationRepository
+      .createQueryBuilder('calibration')
+      .where('calibration.id NOT IN (:...ids)', { ids })
+      .getMany();
+  }
+
   async createAndSaveCalibrationUser(entityData: DeepPartial<CalibrationUser>): Promise<CalibrationUser> {
     const entity = this.calibrationUserRepository.create(entityData);
     return (await this.calibrationUserRepository.save(entity)) as CalibrationUser;
+  }
+
+  async saveCalibrationUser(calibrationUser: DeepPartial<CalibrationUser>): Promise<CalibrationUser>;
+  async saveCalibrationUser(calibrationUser: DeepPartial<CalibrationUser>[]): Promise<CalibrationUser[]>;
+  async saveCalibrationUser(calibrationUser: any) {
+    return await this.calibrationUserRepository.save(calibrationUser);
   }
 
   async findCalibrationByDeviceNext(type: CalibrationTypeEnum, next: Date, deviceId: number): Promise<Calibration> {

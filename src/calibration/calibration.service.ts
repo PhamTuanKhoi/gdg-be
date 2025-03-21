@@ -41,6 +41,48 @@ export class CalibrationService {
     }
   }
 
+  async createAllCalibrationByUser(userId: number) {
+    try {
+      const user = await this.calibrationRepository.findUserById(userId);
+      if (!user || user == null) throw new NotFoundException('user_does_not_exits');
+
+      const calibrationUsers = (await this.calibrationRepository.findCalibrationUserByUserId(userId)) || [];
+      const existingCalibrationIds = calibrationUsers.map((cu) => cu?.calibration?.id);
+
+      // find calibarations -> not -> calibarationId in calibrationUsers
+      let newCalibrations = [];
+      if (existingCalibrationIds.length > 0) {
+        // unique existingCalibrationIds
+        const uniqueCalibrationIds = [...new Set([...existingCalibrationIds])];
+
+        newCalibrations = await this.calibrationRepository.findCalibrationNotIds(uniqueCalibrationIds);
+      } else {
+        newCalibrations = await this.calibrationRepository.findAll();
+      }
+
+      if (newCalibrations.length > 0) {
+        const newCalibrationUsers = newCalibrations.map((calibration) => {
+          const calibrationUser = new CalibrationUser();
+          calibrationUser.user = user;
+          calibrationUser.calibration = calibration;
+          return calibrationUser;
+        });
+
+        // save calibarationUser with calibarations and userId
+        const created = await this.calibrationRepository.saveCalibrationUser(newCalibrationUsers);
+
+        this.logger.log(`created multiple calibration #${created?.length}`);
+
+        return created;
+      }
+
+      return [];
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
   async onModuleInit() {
     this.addCronJobAt5AM();
   }

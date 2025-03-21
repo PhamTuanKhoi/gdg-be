@@ -31,4 +31,26 @@ export class CalibrationController {
   async createCalibrationUser(@Body() dto: CreateCalibrationUserDto) {
     return this.calibrationService.createCalibrationUser(dto);
   }
+
+  @Post('viewer/all')
+  @ApiOperation({
+    summary: 'Tạo mới tất cả CalibrationUser với userId',
+    description: 'Liên kết một User với tất cả Calibration',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'number',
+          description: 'ID của user cần liên kết với tất cả calibration',
+          example: 1,
+        },
+      },
+      required: ['userId'],
+    },
+  })
+  async createAllCalibrationByUser(@Body() dto: { userId: number }) {
+    return this.calibrationService.createAllCalibrationByUser(dto.userId);
+  }
 }
