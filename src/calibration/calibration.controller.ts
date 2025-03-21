@@ -22,7 +22,7 @@ export class CalibrationController {
     return this.calibrationService.findAll(queryCalibrationDto);
   }
 
-  @Post('wiewer')
+  @Post('viewer')
   @ApiOperation({
     summary: 'Tạo mới một CalibrationUser',
     description: 'Liên kết một User với một Calibration',

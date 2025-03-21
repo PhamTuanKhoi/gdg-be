@@ -175,6 +175,16 @@ export class CalibrationRepository extends BaseRepository<Calibration> {
       .getMany();
   }
 
+  async findCalibrationUserByUserAndCalibration(user: User, calibration: Calibration): Promise<CalibrationUser> {
+    // user or calibration is not a complete object
+    return await this.calibrationUserRepository.findOne({
+      where: {
+        user: { id: user.id },
+        calibration: { id: calibration.id },
+      },
+    });
+  }
+
   async createAndSaveCalibrationUser(entityData: DeepPartial<CalibrationUser>): Promise<CalibrationUser> {
     const entity = this.calibrationUserRepository.create(entityData);
     return (await this.calibrationUserRepository.save(entity)) as CalibrationUser;

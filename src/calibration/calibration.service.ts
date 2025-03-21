@@ -17,7 +17,7 @@ export class CalibrationService {
     return await this.calibrationRepository.getLatestCalibrations(queryCalibrationDto);
   }
 
-  async createCalibrationUser(dto: CreateCalibrationUserDto): Promise<CalibrationUser> {
+  async createCalibrationUser(dto: CreateCalibrationUserDto): Promise<CalibrationUser | string> {
     const { userId, calibrationId } = dto;
 
     try {
@@ -28,6 +28,15 @@ export class CalibrationService {
 
       if (!user || user == null) throw new NotFoundException('user_does_not_exits');
       if (!calibration || calibration == null) throw new NotFoundException('calibration_does_not_exits');
+
+      const calibarationUser = await this.calibrationRepository.findCalibrationUserByUserAndCalibration(
+        user,
+        calibration,
+      );
+
+      if (calibarationUser && calibarationUser !== null) {
+        return `viewed`;
+      }
 
       // Lưu vào database
       const created = await this.calibrationRepository.createAndSaveCalibrationUser({ user, calibration });
