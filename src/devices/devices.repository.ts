@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Device } from './entities/device.entity';
 import { DeviceMedia } from 'src/devices/entities/device-media.entity';
 import { DeviceQueryDto } from './dto/query-devices.dto';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { BaseRepository } from 'src/database/abstract.repository';
 import { DeviceInOut } from 'src/infor-movements/entities/device-in-out.entity';
 import { DeviceCalibrationEnum } from './enums/device.calibration.enum';
@@ -22,34 +22,46 @@ export class DevicesRepository extends BaseRepository<Device> {
     super(deviceRepository);
   }
 
-  async findAll({ query, order, key, pageIndex = 1, pageSize = 10 }: DeviceQueryDto): Promise<{
+  async findAll({ query, order, key, pageIndex = 1, pageSize = 3, status, type }: DeviceQueryDto): Promise<{
     total: number;
     pageIndex: number;
     pageSize: number;
     data: Device[];
   }> {
-    const where: FindOptionsWhere<Device>[] = [];
+    const queryBuilder = this.deviceRepository.createQueryBuilder('device');
 
-    // ✅ Apply full-text search on all columns
+    queryBuilder.leftJoinAndSelect('device.medias', 'medias');
+
     if (query) {
-      where.push(
-        { code: ILike(`%${query}%`) },
-        { name_vi: ILike(`%${query}%`) },
-        { name_en: ILike(`%${query}%`) },
-        { manufacturer: ILike(`%${query}%`) },
-        { serial: ILike(`%${query}%`) },
-        { model: ILike(`%${query}%`) },
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('device.code LIKE :query', { query: `%${query}%` })
+            .orWhere('device.name_vi LIKE :query', { query: `%${query}%` })
+            .orWhere('device.name_en LIKE :query', { query: `%${query}%` })
+            .orWhere('device.manufacturer LIKE :query', { query: `%${query}%` })
+            .orWhere('device.serial LIKE :query', { query: `%${query}%` })
+            .orWhere('device.model LIKE :query', { query: `%${query}%` });
+        }),
       );
     }
 
-    // ✅ Use findAndCount to reduce query times
-    const [data, total] = await this.deviceRepository.findAndCount({
-      where: where.length ? where : undefined,
-      order: key ? { [key]: order.toUpperCase() as 'ASC' | 'DESC' } : undefined,
-      skip: (pageIndex - 1) * pageSize,
-      take: pageSize,
-      relations: ['medias'],
-    });
+    if (status?.toString() && status.toString() !== '') {
+      queryBuilder.andWhere('device.status = :status', { status });
+    }
+
+    if (type && type.length > 0) {
+      queryBuilder.andWhere('device.type IN (:...type)', { type });
+    }
+
+    if (key && order) {
+      queryBuilder.orderBy(`device.${key}`, order?.toUpperCase() as 'ASC' | 'DESC');
+    } else {
+      queryBuilder.orderBy('device.id', 'ASC');
+    }
+
+    queryBuilder.skip((pageIndex - 1) * pageSize).take(pageSize);
+
+    const [data, total] = await queryBuilder.getManyAndCount();
 
     return { total, pageIndex: +pageIndex, pageSize: +pageSize, data };
   }

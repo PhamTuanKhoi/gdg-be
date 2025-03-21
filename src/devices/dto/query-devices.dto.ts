@@ -2,6 +2,8 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsInt, Min, IsString, IsIn, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 import { DeviceCalibrationEnum } from '../enums/device.calibration.enum';
+import { DeviceStatusEnum } from '../enums/device.status.enum';
+import { DeviceTypeEnum } from '../enums/device.type.enum';
 
 export class DeviceQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Trang hiện tại' })
@@ -37,4 +39,20 @@ export class DeviceQueryDto {
   @IsOptional()
   @IsEnum(DeviceCalibrationEnum)
   statusFilter?: DeviceCalibrationEnum;
+
+  @ApiPropertyOptional({ description: 'Trạng thái thiết bị' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsEnum(DeviceStatusEnum)
+  status?: DeviceStatusEnum;
+
+  @ApiPropertyOptional({
+    description: 'Danh sách kiểu thiết bị',
+    type: [Number],
+    enum: Object.values(DeviceTypeEnum),
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsEnum(DeviceTypeEnum, { each: true })
+  type?: DeviceTypeEnum[];
 }
