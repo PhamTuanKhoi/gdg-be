@@ -18,6 +18,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         migrationsRun: true, // 🚀 Tự động chạy migration khi khởi động
         logging: false,
         timezone: 'Asia/Ho_Chi_Minh',
+        retryAttempts: 10, // retry 10 time
+        retryDelay: 3000,
       }),
       inject: [ConfigService],
     }),

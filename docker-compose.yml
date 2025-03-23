@@ -1,19 +1,34 @@
 version: '3.8'
-
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: my_nest_mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: Mysql7!js
-      MYSQL_DATABASE: nestjs_typeorm
-      MYSQL_USER: root
-      MYSQL_PASSWORD: Mysql7!js
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "3306:3306"
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - MYSQL_HOST=mysql_db # Tên dịch vụ MySQL thay vì localhost
+      - MYSQL_PORT=3306
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=Mysql7!js
+      - MYSQL_DATABASE=nestjs_typeorm
+      - MYSQL_SYNCHRONIZE=true
+    depends_on:
+      - mysql_db
+    restart: unless-stopped
+
+  mysql_db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=Mysql7!js
+      - MYSQL_DATABASE=nestjs_typeorm
+    ports:
+      - '3307:3306'
     volumes:
       - mysql_data:/var/lib/mysql
+    restart: unless-stopped
 
 volumes:
   mysql_data:
