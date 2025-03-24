@@ -75,6 +75,6 @@ export class Device extends AbstractEntity<Device> {
   calibrations: Calibration[];
 
   // ----------------- short delete ------------------
-  @DeleteDateColumn()
+  @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 }

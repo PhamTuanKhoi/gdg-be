@@ -30,35 +30,23 @@ export class User extends AbstractEntity<User> {
   @Column({ type: 'varchar', length: 255, nullable: true })
   position: string; // Có thể null
 
-  // ----------------- short delete ------------------
-  @DeleteDateColumn()
-  deletedAt?: Date;
-
   // ----------------- relation ----------------------
-  @OneToMany(
-    () => InforMovement,
-    (inforMovement) => inforMovement.removingTech,
-    {
-      cascade: ['insert', 'update'], // Chỉ cho phép chèn và cập nhật
-    },
-  )
+  @OneToMany(() => InforMovement, (inforMovement) => inforMovement.removingTech, {
+    cascade: ['insert', 'update'], // Chỉ cho phép chèn và cập nhật
+  })
   inforRemovings: InforMovement[];
 
-  @OneToMany(
-    () => InforMovement,
-    (inforMovement) => inforMovement.returningTech,
-    {
-      cascade: ['insert', 'update'],
-    },
-  )
+  @OneToMany(() => InforMovement, (inforMovement) => inforMovement.returningTech, {
+    cascade: ['insert', 'update'],
+  })
   inforReturnings: InforMovement[];
 
-  @OneToMany(
-    () => CalibrationUser,
-    (calibrationUsers) => calibrationUsers.user,
-    {
-      cascade: true,
-    },
-  )
+  @OneToMany(() => CalibrationUser, (calibrationUsers) => calibrationUsers.user, {
+    cascade: true,
+  })
   calibrationUsers: CalibrationUser[];
+
+  // ----------------- short delete ------------------
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date;
 }
