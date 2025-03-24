@@ -31,9 +31,10 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
   }> {
     const baseQuery = this.inforMovementRepository
       .createQueryBuilder('inforMovement')
-      .leftJoin('inforMovement.deviceInOuts', 'deviceInOut');
+      .leftJoin('inforMovement.deviceInOuts', 'deviceInOut')
+      .leftJoinAndSelect('inforMovement.removingTech', 'removingTech')
+      .leftJoinAndSelect('inforMovement.returningTech', 'returningTech');
 
-    // ✅ Xử lý tìm kiếm
     if (query) {
       baseQuery.andWhere(
         `inforMovement.ownerName LIKE :query 
@@ -41,7 +42,9 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
         OR inforMovement.technician LIKE :query 
         OR inforMovement.location LIKE :query 
         OR inforMovement.toLocation LIKE :query 
-        OR inforMovement.signature LIKE :query`,
+        OR inforMovement.signature LIKE :query
+        OR removingTech.name LIKE :query
+        OR returningTech.name LIKE :query`,
         { query: `%${query}%` },
       );
     }
@@ -55,8 +58,6 @@ export class InforMovementsRepository extends BaseRepository<InforMovement> {
 
     // ✅ Query lấy dữ liệu (có `GROUP BY`, phân trang đúng)
     const data = await baseQuery
-      .leftJoinAndSelect('inforMovement.removingTech', 'removingTech')
-      .leftJoinAndSelect('inforMovement.returningTech', 'returningTech')
       .select([
         'inforMovement.id AS id',
         'inforMovement.createdAt AS createdAt',
