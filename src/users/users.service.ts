@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './user.repository';
@@ -13,15 +8,13 @@ import { User } from './entities/user.entity';
 import { UserQueryDto } from './dto/query-user.dto';
 import { unlink } from 'fs/promises';
 import { resolve } from 'path';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async createUser(
-    createUserDto: CreateUserDto,
-    avatarFile?: Express.Multer.File,
-  ): Promise<User> {
+  async createUser(createUserDto: CreateUserDto, avatarFile?: Express.Multer.File): Promise<User> {
     const { username, email, phone, password } = createUserDto;
 
     const [existingUsername, existingEmail, existingPhone] = await Promise.all([
@@ -57,29 +50,19 @@ export class UsersService implements OnApplicationBootstrap {
     return await this.userRepository.findById(id);
   }
 
-  async update(
-    id: number,
-    updateUserDto: UpdateUserDto,
-    avatarFile?: Express.Multer.File,
-  ): Promise<User> {
+  async update(id: number, updateUserDto: UpdateUserDto, avatarFile?: Express.Multer.File): Promise<User> {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new NotFoundException('User không tồn tại.');
     }
 
     const [existingEmail, existingPhone] = await Promise.all([
-      updateUserDto.email
-        ? this.userRepository.findOneByField('email', updateUserDto.email)
-        : null,
-      updateUserDto.phone
-        ? this.userRepository.findOneByField('phone', updateUserDto.phone)
-        : null,
+      updateUserDto.email ? this.userRepository.findOneByField('email', updateUserDto.email) : null,
+      updateUserDto.phone ? this.userRepository.findOneByField('phone', updateUserDto.phone) : null,
     ]);
 
-    if (existingEmail && existingEmail.id !== +id)
-      throw new ConflictException('Email đã tồn tại.');
-    if (existingPhone && existingPhone.id !== +id)
-      throw new ConflictException('Số điện thoại đã tồn tại.');
+    if (existingEmail && existingEmail.id !== +id) throw new ConflictException('Email đã tồn tại.');
+    if (existingPhone && existingPhone.id !== +id) throw new ConflictException('Số điện thoại đã tồn tại.');
 
     if (avatarFile) {
       updateUserDto.avatar = `/upload/user/${user.id}/${avatarFile.filename}`;
@@ -109,16 +92,12 @@ export class UsersService implements OnApplicationBootstrap {
     }
   }
 
-  async remove(id: number) {
-    await this.userRepository.delete(id);
-    return true;
+  async remove(id: number): Promise<DeleteResult> {
+    return await this.userRepository.softDelete(id);
   }
 
   async onApplicationBootstrap() {
-    const existingUser = await this.userRepository.findOneByField(
-      'username',
-      'admin',
-    );
+    const existingUser = await this.userRepository.findOneByField('username', 'admin');
     if (!existingUser) {
       const passwordHash = await bcrypt.hash('supersecurepassword', 10);
       await this.userRepository.save({
