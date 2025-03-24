@@ -129,7 +129,7 @@ export class DevicesRepository extends BaseRepository<Device> {
           JSON_ARRAYAGG(
             JSON_OBJECT(
               'id', dm.id,
-              'url', dm.media
+              'media', dm.media
             )
           ), '[]'
         ) AS medias
