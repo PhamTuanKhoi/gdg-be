@@ -59,6 +59,7 @@ export class DevicesRepository extends BaseRepository<Device> {
       queryBuilder.orderBy('device.id', 'ASC');
     }
 
+    queryBuilder.andWhere('device.deletedAt IS NULL');
     queryBuilder.skip((pageIndex - 1) * pageSize).take(pageSize);
 
     const [data, total] = await queryBuilder.getManyAndCount();
@@ -97,6 +98,7 @@ export class DevicesRepository extends BaseRepository<Device> {
       }
     }
 
+    whereConditions.push(`d.deletedAt IS NULL`);
     const whereClause = whereConditions.length ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
     const orderClause = await this.validKeyDeviceCalibration(key, order);
@@ -298,6 +300,7 @@ export class DevicesRepository extends BaseRepository<Device> {
     return await this.deviceRepository.findOne({
       where: { id },
       relations: ['medias'],
+      withDeleted: false,
     });
   }
 

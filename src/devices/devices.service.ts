@@ -233,6 +233,6 @@ export class DevicesService {
   }
 
   async remove(id: number) {
-    return await this.devicesRepository.delete(id);
+    return await this.devicesRepository.softDelete(id);
   }
 }
