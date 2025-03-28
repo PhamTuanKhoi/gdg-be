@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -17,38 +12,48 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  private readonly logger = new Logger(AuthService.name);
+
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findByUsername(username);
+    try {
+      const user = await this.usersService.findByUsername(username);
 
-    if (!user)
-      throw new HttpException(`Username không tồn tại !`, HttpStatus.NOT_FOUND);
+      if (!user) throw new HttpException(`Username không tồn tại !`, HttpStatus.NOT_FOUND);
 
-    const match_email = await bcrypt.compare(pass, user?.password);
+      const match_email = await bcrypt.compare(pass, user?.password);
 
-    if (!match_email)
-      throw new HttpException(`Mật khẩu không đúng!`, HttpStatus.BAD_GATEWAY);
+      if (!match_email) throw new HttpException(`Mật khẩu không đúng!`, HttpStatus.BAD_GATEWAY);
 
-    if (user && match_email) {
-      const { password, ...result } = user;
-      return result;
+      if (user && match_email) {
+        const { password, ...result } = user;
+        return result;
+      }
+
+      return null;
+    } catch (error) {
+      this.logger.log(error);
+      throw new UnauthorizedException();
     }
-
-    return null;
   }
 
   async login(loginUserDto: LoginUserDto) {
-    const user = await this.usersService.findByUsername(loginUserDto.username);
-    const payload = {
-      id: user.id,
-      email: user.name,
-    };
+    try {
+      const user = await this.usersService.findByUsername(loginUserDto.username);
+      const payload = {
+        id: user.id,
+        email: user.name,
+      };
 
-    const { password, ...rest } = user;
+      const { password, ...rest } = user;
 
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: rest,
-    };
+      return {
+        access_token: this.jwtService.sign(payload),
+        user: rest,
+      };
+    } catch (error) {
+      this.logger.log(error);
+      throw new UnauthorizedException();
+    }
   }
 
   async verifyJwt(token: string) {
@@ -68,6 +73,7 @@ export class AuthService {
         exp,
       };
     } catch (error) {
+      this.logger.log(error);
       throw new UnauthorizedException();
     }
   }
