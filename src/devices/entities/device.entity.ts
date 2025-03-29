@@ -10,10 +10,7 @@ export class Device extends AbstractEntity<Device> {
   code: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  name_vi: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  name_en: string;
+  name: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   manufacturer: string;
@@ -24,11 +21,11 @@ export class Device extends AbstractEntity<Device> {
   @Column({ type: 'varchar', length: 255, nullable: true })
   serial: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  place: string;
+  // @Column({ type: 'varchar', length: 255, nullable: true })
+  // place: string;
 
-  @Column({ type: 'int', nullable: true })
-  location: number;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  place: string;
 
   @Column({ type: 'date', nullable: true })
   last: Date;
@@ -48,15 +45,18 @@ export class Device extends AbstractEntity<Device> {
   @Column({ type: 'varchar', length: 500, nullable: true })
   description: string;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  maintenanceNotes: string;
+
   // ----------------- order ----------------------
-  @Column({ type: 'int', nullable: true })
-  type: number;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  type: string;
 
   @Column({ type: 'int', nullable: true })
   period: number;
 
-  @Column({ type: 'int', nullable: true })
-  status: number;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  status: string;
 
   // ----------------- relation --------------------
   @OneToMany(() => DeviceMedia, (deviceMedia) => deviceMedia.device, {

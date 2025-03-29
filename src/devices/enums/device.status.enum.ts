@@ -1,5 +1,5 @@
 export enum DeviceStatusEnum {
-    ON_SITE = 0,
-    AT_LAB = 1,
+  ON_SITE = 'on_site',
+  AT_LAB = 'at_lab',
+  VENDOR = 'vendor',
 }
-  

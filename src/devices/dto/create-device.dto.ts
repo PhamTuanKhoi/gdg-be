@@ -1,13 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsDateString,
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { DeviceStatusEnum } from '../enums/device.status.enum';
 import { DeviceLocationEnum } from '../enums/device.location.enum';
 import { DeviceTypeEnum } from '../enums/device.type.enum';
@@ -28,16 +21,16 @@ export class CreateDeviceDto {
   })
   @IsOptional()
   @IsString()
-  name_vi?: string;
+  name?: string;
 
-  @ApiProperty({
-    type: 'string',
-    example: 'Device Name EN',
-    description: 'Device name in English',
-  })
-  @IsOptional()
-  @IsString()
-  name_en?: string;
+  // @ApiProperty({
+  //   type: 'string',
+  //   example: 'Device Name EN',
+  //   description: 'Device name in English',
+  // })
+  // @IsOptional()
+  // @IsString()
+  // name_en?: string;
 
   @ApiProperty({ type: 'string', example: 'Sony', description: 'Manufacturer' })
   @IsOptional()
@@ -64,9 +57,9 @@ export class CreateDeviceDto {
     description: 'Location of the device (0, 1, 2)',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Type(() => String)
   @IsEnum(DeviceLocationEnum)
-  location?: DeviceLocationEnum;
+  place?: DeviceLocationEnum;
 
   @ApiProperty({
     type: 'string',
@@ -103,18 +96,18 @@ export class CreateDeviceDto {
     description: 'Type of the device (0, 1, 2, 3, 4)',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Type(() => String)
   @IsEnum(DeviceTypeEnum)
   type?: DeviceTypeEnum;
 
-  @ApiProperty({
-    type: 'string',
-    example: 'At company ABC',
-    description: 'Device place',
-  })
-  @IsOptional()
-  @IsString()
-  place?: string;
+  // @ApiProperty({
+  //   type: 'string',
+  //   example: 'At company ABC',
+  //   description: 'Device place',
+  // })
+  // @IsOptional()
+  // @IsString()
+  // place?: string;
 
   @ApiProperty({
     type: 'string',
@@ -149,10 +142,10 @@ export class CreateDeviceDto {
   @ApiProperty({
     enum: DeviceStatusEnum,
     example: DeviceStatusEnum.ON_SITE,
-    description: 'Status of the device (0: ON_SITE, 1: AT_LAB)',
+    description: 'Status of the device',
   })
   @IsOptional()
-  @Type(() => Number)
+  @Type(() => String)
   @IsEnum(DeviceStatusEnum)
   status?: DeviceStatusEnum;
 
@@ -174,4 +167,13 @@ export class CreateDeviceDto {
   })
   @IsOptional()
   certificate?: any;
+
+  @ApiProperty({
+    type: 'string',
+    example: 'description company ABC',
+    description: 'Device description',
+  })
+  @IsOptional()
+  @IsString()
+  maintenanceNotes?: string;
 }
